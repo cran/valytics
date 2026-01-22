@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Marcello Grassi" />
+
+
+<title>Understanding Method Comparison Statistics</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Understanding Method Comparison
+Statistics</h1>
+<h4 class="author">Marcello Grassi</h4>
+
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>This vignette provides a conceptual overview of the statistical
+methods implemented in <code>valytics</code>. The goal is to help you
+understand <em>what</em> the numbers mean and <em>how</em> to think
+about them, not to prescribe specific acceptance criteria or make
+decisions for you.</p>
+<p>Whether your analysis “passes” or “fails” depends entirely on your
+specific application, regulatory requirements, and clinical context.
+This package provides the tools; you and your organization define what
+constitutes acceptable agreement.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(valytics)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span></code></pre></div>
+</div>
+<div id="statistical-concepts-in-bland-altman-analysis" class="section level2">
+<h2>Statistical Concepts in Bland-Altman Analysis</h2>
+<div id="what-is-bias" class="section level3">
+<h3>What is Bias?</h3>
+<p>The <strong>bias</strong> (mean difference) quantifies the average
+systematic offset between two methods. It answers: “On average, how much
+higher or lower does method Y read compared to method X?”</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;creatinine_serum&quot;</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>ba <span class="ot">&lt;-</span> <span class="fu">ba_analysis</span>(</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  <span class="at">x =</span> creatinine_serum<span class="sc">$</span>enzymatic,</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>  <span class="at">y =</span> creatinine_serum<span class="sc">$</span>jaffe</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Bias:&quot;</span>, <span class="fu">round</span>(ba<span class="sc">$</span>results<span class="sc">$</span>bias, <span class="dv">3</span>), <span class="st">&quot;mg/dL</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co">#&gt; Bias: 0.174 mg/dL</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;95% CI:&quot;</span>, <span class="fu">round</span>(ba<span class="sc">$</span>results<span class="sc">$</span>bias_ci[<span class="st">&quot;lower&quot;</span>], <span class="dv">3</span>), <span class="st">&quot;to&quot;</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>    <span class="fu">round</span>(ba<span class="sc">$</span>results<span class="sc">$</span>bias_ci[<span class="st">&quot;upper&quot;</span>], <span class="dv">3</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; 95% CI: 0.127 to 0.22</span></span></code></pre></div>
+<p><strong>What this tells you:</strong></p>
+<ul>
+<li>The point estimate indicates the direction and magnitude of
+systematic difference</li>
+<li>The confidence interval quantifies uncertainty due to sampling
+variability</li>
+<li>If the CI excludes zero, the bias is statistically distinguishable
+from zero at that confidence level</li>
+</ul>
+<p><strong>What this does NOT tell you:</strong></p>
+<ul>
+<li>Whether the bias is clinically important (that depends on your
+application)</li>
+<li>Whether the methods are “equivalent” (you must define what that
+means)</li>
+<li>Whether you should use one method over another</li>
+</ul>
+</div>
+<div id="what-are-limits-of-agreement" class="section level3">
+<h3>What are Limits of Agreement?</h3>
+<p>The <strong>limits of agreement (LoA)</strong> define an interval
+expected to contain 95% of the differences between methods. They answer:
+“For a randomly selected sample, how much could the two methods
+disagree?”</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Lower LoA:&quot;</span>, <span class="fu">round</span>(ba<span class="sc">$</span>results<span class="sc">$</span>loa_lower, <span class="dv">3</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; Lower LoA: -0.236</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Upper LoA:&quot;</span>, <span class="fu">round</span>(ba<span class="sc">$</span>results<span class="sc">$</span>loa_upper, <span class="dv">3</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#&gt; Upper LoA: 0.584</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Width:&quot;</span>, <span class="fu">round</span>(ba<span class="sc">$</span>results<span class="sc">$</span>loa_upper <span class="sc">-</span> ba<span class="sc">$</span>results<span class="sc">$</span>loa_lower, <span class="dv">3</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#&gt; Width: 0.82</span></span></code></pre></div>
+<p>The LoA represent the <em>range</em> of disagreement you can expect
+in practice. A narrow LoA indicates consistent agreement; a wide LoA
+indicates variable differences.</p>
+<p><strong>Key insight:</strong> The LoA are often more informative than
+the bias alone. Two methods might have negligible average bias but wide
+limits of agreement, meaning individual measurements could differ
+substantially.</p>
+</div>
+<div id="visualizing-agreement" class="section level3">
+<h3>Visualizing Agreement</h3>
+<p>The Bland-Altman plot provides a visual assessment:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">plot</span>(ba)</span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="data:image/png;base64,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" alt="Bland-Altman plot showing differences vs. averages." />
+<p class="caption">
+Bland-Altman plot showing differences vs. averages.
+</p>
+</div>
+<p><strong>What to look for:</strong></p>
+<ul>
+<li><strong>Random scatter around the bias line</strong>: Suggests
+constant bias across the measurement range</li>
+<li><strong>Funnel shape</strong>: Variance changes with magnitude
+(heteroscedasticity)</li>
+<li><strong>Systematic trend</strong>: Proportional bias (differences
+depend on concentration)</li>
+<li><strong>Points outside LoA</strong>: Expected for ~5% of
+observations if assumptions hold</li>
+</ul>
+</div>
+<div id="checking-assumptions" class="section level3">
+<h3>Checking Assumptions</h3>
+<p>Bland-Altman analysis assumes normally distributed differences. The
+summary provides a Shapiro-Wilk test:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>summ <span class="ot">&lt;-</span> <span class="fu">summary</span>(ba)</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(summ<span class="sc">$</span>normality_test)) {</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;Shapiro-Wilk p-value:&quot;</span>, <span class="fu">round</span>(summ<span class="sc">$</span>normality_test<span class="sc">$</span>p.value, <span class="dv">4</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>}</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co">#&gt; Shapiro-Wilk p-value: 0</span></span></code></pre></div>
+<p>A low p-value suggests non-normality. Consider:</p>
+<ul>
+<li>Examining the distribution visually</li>
+<li>Using percentage differences if variance increases with
+magnitude</li>
+<li>Applying transformations for skewed data</li>
+</ul>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">data.frame</span>(<span class="at">diff =</span> ba<span class="sc">$</span>results<span class="sc">$</span>differences), <span class="fu">aes</span>(<span class="at">x =</span> diff)) <span class="sc">+</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="fu">after_stat</span>(density)), <span class="at">bins =</span> <span class="dv">15</span>,</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>                 <span class="at">fill =</span> <span class="st">&quot;steelblue&quot;</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  <span class="fu">geom_density</span>(<span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Difference (Jaffe - Enzymatic)&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Density&quot;</span>) <span class="sc">+</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="data:image/png;base64,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" alt="Distribution of differences." />
+<p class="caption">
+Distribution of differences.
+</p>
+</div>
+</div>
+</div>
+<div id="statistical-concepts-in-passing-bablok-regression" class="section level2">
+<h2>Statistical Concepts in Passing-Bablok Regression</h2>
+<div id="slope-and-intercept" class="section level3">
+<h3>Slope and Intercept</h3>
+<p>Passing-Bablok regression fits a line:
+<code>Y = intercept + slope * X</code></p>
+<p>The parameters have direct interpretations:</p>
+<ul>
+<li><strong>Slope = 1</strong>: No proportional (multiplicative)
+difference</li>
+<li><strong>Intercept = 0</strong>: No constant (additive)
+difference</li>
+</ul>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>pb <span class="ot">&lt;-</span> <span class="fu">pb_regression</span>(</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  <span class="at">x =</span> creatinine_serum<span class="sc">$</span>enzymatic,</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  <span class="at">y =</span> creatinine_serum<span class="sc">$</span>jaffe</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Slope:&quot;</span>, <span class="fu">round</span>(pb<span class="sc">$</span>results<span class="sc">$</span>slope, <span class="dv">4</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="co">#&gt; Slope: 0.9711</span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;  95% CI:&quot;</span>, <span class="fu">round</span>(pb<span class="sc">$</span>results<span class="sc">$</span>slope_ci[<span class="st">&quot;lower&quot;</span>], <span class="dv">4</span>), <span class="st">&quot;to&quot;</span>,</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>    <span class="fu">round</span>(pb<span class="sc">$</span>results<span class="sc">$</span>slope_ci[<span class="st">&quot;upper&quot;</span>], <span class="dv">4</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="co">#&gt;   95% CI: 0.9661 to 0.9741</span></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Intercept:&quot;</span>, <span class="fu">round</span>(pb<span class="sc">$</span>results<span class="sc">$</span>intercept, <span class="dv">4</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co">#&gt; Intercept: 0.2339</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;  95% CI:&quot;</span>, <span class="fu">round</span>(pb<span class="sc">$</span>results<span class="sc">$</span>intercept_ci[<span class="st">&quot;lower&quot;</span>], <span class="dv">4</span>), <span class="st">&quot;to&quot;</span>,</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>    <span class="fu">round</span>(pb<span class="sc">$</span>results<span class="sc">$</span>intercept_ci[<span class="st">&quot;upper&quot;</span>], <span class="dv">4</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#&gt;   95% CI: 0.2288 to 0.2387</span></span></code></pre></div>
+<p><strong>How to read the confidence intervals:</strong></p>
+<ul>
+<li>If the slope CI <strong>includes 1</strong>: Cannot conclude
+proportional bias exists</li>
+<li>If the slope CI <strong>excludes 1</strong>: Evidence of
+proportional bias</li>
+<li>If the intercept CI <strong>includes 0</strong>: Cannot conclude
+constant bias exists</li>
+<li>If the intercept CI <strong>excludes 0</strong>: Evidence of
+constant bias</li>
+</ul>
+</div>
+<div id="translating-to-practical-differences" class="section level3">
+<h3>Translating to Practical Differences</h3>
+<p>You can use the regression equation to estimate expected differences
+at specific concentrations:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># At various concentrations, what&#39;s the expected difference?</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>concentrations <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.8</span>, <span class="fl">1.3</span>, <span class="fl">3.0</span>, <span class="fl">6.0</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="cf">for</span> (conc <span class="cf">in</span> concentrations) {</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>  expected_y <span class="ot">&lt;-</span> pb<span class="sc">$</span>results<span class="sc">$</span>intercept <span class="sc">+</span> pb<span class="sc">$</span>results<span class="sc">$</span>slope <span class="sc">*</span> conc</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>  difference <span class="ot">&lt;-</span> expected_y <span class="sc">-</span> conc</span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;At X = %.1f: expected Y = %.3f, difference = %.3f</span><span class="sc">\n</span><span class="st">&quot;</span>,</span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>              conc, expected_y, difference))</span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>}</span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="co">#&gt; At X = 0.8: expected Y = 1.011, difference = 0.211</span></span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a><span class="co">#&gt; At X = 1.3: expected Y = 1.496, difference = 0.196</span></span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a><span class="co">#&gt; At X = 3.0: expected Y = 3.147, difference = 0.147</span></span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a><span class="co">#&gt; At X = 6.0: expected Y = 6.060, difference = 0.060</span></span></code></pre></div>
+<p>This helps translate abstract regression parameters into concrete,
+application-specific terms.</p>
+</div>
+<div id="linearity-assessment" class="section level3">
+<h3>Linearity Assessment</h3>
+<p>The CUSUM test evaluates whether a linear model is appropriate:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;CUSUM statistic:&quot;</span>, <span class="fu">round</span>(pb<span class="sc">$</span>cusum<span class="sc">$</span>statistic, <span class="dv">4</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="co">#&gt; CUSUM statistic: 0.97</span></span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;p-value:&quot;</span>, <span class="fu">round</span>(pb<span class="sc">$</span>cusum<span class="sc">$</span>p_value, <span class="dv">4</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="co">#&gt; p-value: 0.3036</span></span></code></pre></div>
+<p>A significant result (conventionally p &lt; 0.05) suggests the
+relationship may not be linear across the measurement range. If
+non-linearity is detected:</p>
+<ul>
+<li>Consider whether it’s clinically meaningful</li>
+<li>Examine specific concentration ranges</li>
+<li>Evaluate whether a single regression is appropriate</li>
+</ul>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">plot</span>(pb, <span class="at">type =</span> <span class="st">&quot;cusum&quot;</span>)</span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="data:image/png;base64,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" alt="CUSUM plot for linearity assessment." />
+<p class="caption">
+CUSUM plot for linearity assessment.
+</p>
+</div>
+</div>
+</div>
+<div id="common-analysis-considerations" class="section level2">
+<h2>Common Analysis Considerations</h2>
+<div id="correlation-is-not-agreement" class="section level3">
+<h3>Correlation is Not Agreement</h3>
+<p>High correlation between methods is often reported but can be
+misleading:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>r <span class="ot">&lt;-</span> <span class="fu">cor</span>(creatinine_serum<span class="sc">$</span>enzymatic, creatinine_serum<span class="sc">$</span>jaffe)</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Correlation coefficient:&quot;</span>, <span class="fu">round</span>(r, <span class="dv">4</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="co">#&gt; Correlation coefficient: 0.9952</span></span></code></pre></div>
+<p>Correlation measures whether methods <em>rank</em> samples similarly,
+not whether they give the <em>same values</em>. Two methods with r = 1
+but different calibrations would show systematic bias that correlation
+fails to detect.</p>
+</div>
+<div id="sample-characteristics-matter" class="section level3">
+<h3>Sample Characteristics Matter</h3>
+<p>Your results depend on:</p>
+<ul>
+<li><strong>Concentration range</strong>: Bias may differ at low
+vs. high concentrations</li>
+<li><strong>Sample types</strong>: Matrix effects can vary</li>
+<li><strong>Population</strong>: Results from one patient group may not
+generalize</li>
+</ul>
+<p>Be cautious about extrapolating beyond the conditions of your
+study.</p>
+</div>
+<div id="statistical-vs.-practical-significance" class="section level3">
+<h3>Statistical vs. Practical Significance</h3>
+<p>A statistically significant bias (CI excludes zero) may or may not be
+practically important. Consider:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="co"># Example: Is a bias of X clinically meaningful?</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="co"># This depends entirely on YOUR application</span></span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>bias_value <span class="ot">&lt;-</span> ba<span class="sc">$</span>results<span class="sc">$</span>bias</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Observed bias:&quot;</span>, <span class="fu">round</span>(bias_value, <span class="dv">3</span>), <span class="st">&quot;mg/dL</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a><span class="co">#&gt; Observed bias: 0.174 mg/dL</span></span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">Whether this is &#39;acceptable&#39; depends on:</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a><span class="co">#&gt; Whether this is &#39;acceptable&#39; depends on:</span></span>
+<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;- Your specific clinical decision thresholds</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a><span class="co">#&gt; - Your specific clinical decision thresholds</span></span>
+<span id="cb14-12"><a href="#cb14-12" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;- Regulatory requirements for your application</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb14-13"><a href="#cb14-13" tabindex="-1"></a><span class="co">#&gt; - Regulatory requirements for your application</span></span>
+<span id="cb14-14"><a href="#cb14-14" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;- Intended use of the measurement</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb14-15"><a href="#cb14-15" tabindex="-1"></a><span class="co">#&gt; - Intended use of the measurement</span></span>
+<span id="cb14-16"><a href="#cb14-16" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;- Established performance goals (CLIA, biological variation, etc.)</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb14-17"><a href="#cb14-17" tabindex="-1"></a><span class="co">#&gt; - Established performance goals (CLIA, biological variation, etc.)</span></span></code></pre></div>
+</div>
+</div>
+<div id="creating-analysis-reports" class="section level2">
+<h2>Creating Analysis Reports</h2>
+<p>Here’s how to extract key statistics for reporting:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="co"># Bland-Altman summary</span></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;=== Bland-Altman Analysis ===</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="co">#&gt; === Bland-Altman Analysis ===</span></span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;n = %d</span><span class="sc">\n</span><span class="st">&quot;</span>, ba<span class="sc">$</span>input<span class="sc">$</span>n))</span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a><span class="co">#&gt; n = 80</span></span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;Bias: %.3f (95%% CI: %.3f to %.3f)</span><span class="sc">\n</span><span class="st">&quot;</span>,</span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a>            ba<span class="sc">$</span>results<span class="sc">$</span>bias,</span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a>            ba<span class="sc">$</span>results<span class="sc">$</span>bias_ci[<span class="st">&quot;lower&quot;</span>],</span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a>            ba<span class="sc">$</span>results<span class="sc">$</span>bias_ci[<span class="st">&quot;upper&quot;</span>]))</span>
+<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a><span class="co">#&gt; Bias: 0.174 (95% CI: 0.127 to 0.220)</span></span>
+<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;SD of differences: %.3f</span><span class="sc">\n</span><span class="st">&quot;</span>, ba<span class="sc">$</span>results<span class="sc">$</span>sd_diff))</span>
+<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a><span class="co">#&gt; SD of differences: 0.209</span></span>
+<span id="cb15-13"><a href="#cb15-13" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;LoA: %.3f to %.3f</span><span class="sc">\n\n</span><span class="st">&quot;</span>,</span>
+<span id="cb15-14"><a href="#cb15-14" tabindex="-1"></a>            ba<span class="sc">$</span>results<span class="sc">$</span>loa_lower,</span>
+<span id="cb15-15"><a href="#cb15-15" tabindex="-1"></a>            ba<span class="sc">$</span>results<span class="sc">$</span>loa_upper))</span>
+<span id="cb15-16"><a href="#cb15-16" tabindex="-1"></a><span class="co">#&gt; LoA: -0.236 to 0.584</span></span>
+<span id="cb15-17"><a href="#cb15-17" tabindex="-1"></a></span>
+<span id="cb15-18"><a href="#cb15-18" tabindex="-1"></a><span class="co"># Passing-Bablok summary</span></span>
+<span id="cb15-19"><a href="#cb15-19" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;=== Passing-Bablok Regression ===</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb15-20"><a href="#cb15-20" tabindex="-1"></a><span class="co">#&gt; === Passing-Bablok Regression ===</span></span>
+<span id="cb15-21"><a href="#cb15-21" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;Slope: %.4f (95%% CI: %.4f to %.4f)</span><span class="sc">\n</span><span class="st">&quot;</span>,</span>
+<span id="cb15-22"><a href="#cb15-22" tabindex="-1"></a>            pb<span class="sc">$</span>results<span class="sc">$</span>slope,</span>
+<span id="cb15-23"><a href="#cb15-23" tabindex="-1"></a>            pb<span class="sc">$</span>results<span class="sc">$</span>slope_ci[<span class="st">&quot;lower&quot;</span>],</span>
+<span id="cb15-24"><a href="#cb15-24" tabindex="-1"></a>            pb<span class="sc">$</span>results<span class="sc">$</span>slope_ci[<span class="st">&quot;upper&quot;</span>]))</span>
+<span id="cb15-25"><a href="#cb15-25" tabindex="-1"></a><span class="co">#&gt; Slope: 0.9711 (95% CI: 0.9661 to 0.9741)</span></span>
+<span id="cb15-26"><a href="#cb15-26" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;Intercept: %.4f (95%% CI: %.4f to %.4f)</span><span class="sc">\n</span><span class="st">&quot;</span>,</span>
+<span id="cb15-27"><a href="#cb15-27" tabindex="-1"></a>            pb<span class="sc">$</span>results<span class="sc">$</span>intercept,</span>
+<span id="cb15-28"><a href="#cb15-28" tabindex="-1"></a>            pb<span class="sc">$</span>results<span class="sc">$</span>intercept_ci[<span class="st">&quot;lower&quot;</span>],</span>
+<span id="cb15-29"><a href="#cb15-29" tabindex="-1"></a>            pb<span class="sc">$</span>results<span class="sc">$</span>intercept_ci[<span class="st">&quot;upper&quot;</span>]))</span>
+<span id="cb15-30"><a href="#cb15-30" tabindex="-1"></a><span class="co">#&gt; Intercept: 0.2339 (95% CI: 0.2288 to 0.2387)</span></span>
+<span id="cb15-31"><a href="#cb15-31" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;CUSUM p-value: %.4f</span><span class="sc">\n</span><span class="st">&quot;</span>, pb<span class="sc">$</span>cusum<span class="sc">$</span>p_value))</span>
+<span id="cb15-32"><a href="#cb15-32" tabindex="-1"></a><span class="co">#&gt; CUSUM p-value: 0.3036</span></span></code></pre></div>
+</div>
+<div id="choosing-the-right-method" class="section level2">
+<h2>Choosing the Right Method</h2>
+<p>The <code>valytics</code> package provides three complementary
+approaches for method comparison. Each has strengths suited to different
+scenarios.</p>
+<div id="method-comparison-table" class="section level3">
+<h3>Method Comparison Table</h3>
+<table>
+<caption>Comparison of method comparison approaches</caption>
+<colgroup>
+<col width="19%" />
+<col width="27%" />
+<col width="29%" />
+<col width="24%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Aspect</th>
+<th align="left">Bland-Altman</th>
+<th align="left">Passing-Bablok</th>
+<th align="left">Deming</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Primary question</td>
+<td align="left">How well do methods agree?</td>
+<td align="left">Is there systematic bias?</td>
+<td align="left">Is there systematic bias?</td>
+</tr>
+<tr class="even">
+<td align="left">Statistical approach</td>
+<td align="left">Descriptive statistics</td>
+<td align="left">Non-parametric regression</td>
+<td align="left">Parametric regression</td>
+</tr>
+<tr class="odd">
+<td align="left">Error assumption</td>
+<td align="left">Differences ~ Normal</td>
+<td align="left">Distribution-free</td>
+<td align="left">Errors ~ Normal</td>
+</tr>
+<tr class="even">
+<td align="left">Outlier handling</td>
+<td align="left">Sensitive</td>
+<td align="left">Robust</td>
+<td align="left">Sensitive</td>
+</tr>
+<tr class="odd">
+<td align="left">Output focus</td>
+<td align="left">Bias, limits of agreement</td>
+<td align="left">Slope, intercept CIs</td>
+<td align="left">Slope, intercept, SEs</td>
+</tr>
+<tr class="even">
+<td align="left">Sample size</td>
+<td align="left">n &gt;= 30 recommended</td>
+<td align="left">n &gt;= 30 for stable CIs</td>
+<td align="left">n &gt;= 10 feasible</td>
+</tr>
+<tr class="odd">
+<td align="left">Best when</td>
+<td align="left">Defining acceptable agreement</td>
+<td align="left">Outliers present, unknown error</td>
+<td align="left">Known error ratio, small n</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="decision-flowchart" class="section level3">
+<h3>Decision Flowchart</h3>
+<ol style="list-style-type: decimal">
+<li><strong>Do you need to define acceptable limits of
+agreement?</strong>
+<ul>
+<li>Yes → Use <strong>Bland-Altman analysis</strong></li>
+<li>No → Continue to step 2</li>
+</ul></li>
+<li><strong>Are there potential outliers in your data?</strong>
+<ul>
+<li>Yes → Use <strong>Passing-Bablok regression</strong></li>
+<li>No → Continue to step 3</li>
+</ul></li>
+<li><strong>Do you know the error ratio between methods?</strong>
+<ul>
+<li>Yes → Use <strong>Deming regression</strong> with specified λ</li>
+<li>No → Use <strong>Deming regression</strong> with λ = 1 (orthogonal)
+or <strong>Passing-Bablok</strong></li>
+</ul></li>
+<li><strong>Is your sample size small (n &lt; 30)?</strong>
+<ul>
+<li>Yes → <strong>Deming regression</strong> may provide more stable
+estimates</li>
+<li>No → Either regression method is appropriate</li>
+</ul></li>
+</ol>
+</div>
+<div id="using-multiple-methods" class="section level3">
+<h3>Using Multiple Methods</h3>
+<p>In practice, using multiple methods provides a more complete
+picture:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="co"># Complete method comparison workflow</span></span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>ba <span class="ot">&lt;-</span> <span class="fu">ba_analysis</span>(reference <span class="sc">~</span> test, <span class="at">data =</span> mydata)</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>pb <span class="ot">&lt;-</span> <span class="fu">pb_regression</span>(reference <span class="sc">~</span> test, <span class="at">data =</span> mydata)</span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>dm <span class="ot">&lt;-</span> <span class="fu">deming_regression</span>(reference <span class="sc">~</span> test, <span class="at">data =</span> mydata)</span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a><span class="co"># Bland-Altman for agreement assessment</span></span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a><span class="fu">summary</span>(ba)</span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a><span class="fu">plot</span>(ba)</span>
+<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a></span>
+<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a><span class="co"># Compare regression methods</span></span>
+<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Passing-Bablok slope:&quot;</span>, pb<span class="sc">$</span>results<span class="sc">$</span>slope, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Deming slope:&quot;</span>, dm<span class="sc">$</span>results<span class="sc">$</span>slope, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span></code></pre></div>
+<p>If Passing-Bablok and Deming give similar results, you can be more
+confident in the conclusions. If they differ substantially, investigate
+why (outliers? non-normality? heteroscedasticity?).</p>
+</div>
+</div>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p>The <code>valytics</code> package provides statistical tools for
+method comparison. It calculates:</p>
+<ul>
+<li><strong>Bland-Altman</strong>: Bias, limits of agreement, and their
+confidence intervals</li>
+<li><strong>Passing-Bablok</strong>: Slope, intercept, and linearity
+assessment</li>
+<li><strong>Deming regression</strong>: Slope, intercept, and linearity
+assessment when both X and Y variables have measurement errors</li>
+</ul>
+<p>These statistics describe the <em>relationship</em> between methods.
+Whether that relationship is “acceptable” for your purpose is a separate
+question that depends on:</p>
+<ul>
+<li>Clinical decision thresholds</li>
+<li>Regulatory requirements</li>
+<li>Performance specifications (biological variation, CLIA, etc.)</li>
+<li>Intended use</li>
+</ul>
+<p>The package reports what the data show. You decide what it means for
+your application.</p>
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+<p>Bland JM, Altman DG. Statistical methods for assessing agreement
+between two methods of clinical measurement. Lancet.
+1986;1(8476):307-310.</p>
+<p>Bland JM, Altman DG. Measuring agreement in method comparison
+studies. Statistical Methods in Medical Research. 1999;8(2):135-160.</p>
+<p>Passing H, Bablok W. A new biometrical procedure for testing the
+equality of measurements from two different analytical methods. Journal
+of Clinical Chemistry and Clinical Biochemistry.
+1983;21(11):709-720.</p>
+<p>Westgard JO, Hunt MR. Use and interpretation of common statistical
+tests in method-comparison studies. Clinical Chemistry.
+1973;19(1):49-57.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

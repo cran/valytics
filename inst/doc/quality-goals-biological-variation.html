@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Marcello Grassi" />
+
+
+<title>Setting Quality Goals with Biological Variation</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Setting Quality Goals with Biological
+Variation</h1>
+<h4 class="author">Marcello Grassi</h4>
+
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>A fundamental question in laboratory medicine is: “How good does my
+analytical method need to be?” The answer depends on the intended
+clinical use. A method that is acceptable for population screening may
+be inadequate for monitoring individual patients. This vignette
+introduces the biological variation model for setting analytical
+performance specifications, implemented in the <code>valytics</code>
+package through three functions: - <code>ate_from_bv()</code>: Calculate
+specifications from biological variation data -
+<code>sigma_metric()</code>: Quantify performance using the Six Sigma
+metric - <code>ate_assessment()</code>: Evaluate observed performance
+against specifications</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(valytics)</span></code></pre></div>
+</div>
+<div id="the-biological-variation-model" class="section level2">
+<h2>The Biological Variation Model</h2>
+<div id="concept" class="section level3">
+<h3>Concept</h3>
+<p>Every measurand (analyte) exhibits natural variation even in healthy
+individuals. This variation has two components: - <strong>Within-subject
+variation (CV<sub>I</sub>)</strong>: Day-to-day fluctuation within an
+individual - <strong>Between-subject variation
+(CV<sub>G</sub>)</strong>: Differences between individuals in a
+population The biological variation model, developed by Fraser,
+Petersen, and colleagues, uses these inherent variations to derive
+meaningful analytical performance goals. The logic is straightforward:
+analytical error should be small enough that it does not significantly
+increase the total variation observed in test results.</p>
+</div>
+<div id="the-formulas" class="section level3">
+<h3>The Formulas</h3>
+<p>At the <strong>desirable</strong> performance level, the formulas
+are:</p>
+<p><strong>Allowable Imprecision:</strong> <span class="math display">\[CV_A \leq 0.50 \times CV_I\]</span><br />
+<strong>Allowable Bias:</strong><br />
+<span class="math display">\[Bias \leq 0.25 \times \sqrt{CV_I^2 +
+CV_G^2}\]</span><br />
+<strong>Total Allowable Error:</strong><br />
+<span class="math display">\[TEa \leq k \times CV_A + Bias\]</span>
+Where <em>k</em> is a coverage factor (typically 1.65 for ~95% of
+results).</p>
+</div>
+<div id="performance-hierarchy" class="section level3">
+<h3>Performance Hierarchy</h3>
+<p>Three performance tiers are defined, each with different
+multipliers:</p>
+<table style="width:100%;">
+<colgroup>
+<col width="18%" />
+<col width="34%" />
+<col width="15%" />
+<col width="31%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Level</th>
+<th>Imprecision</th>
+<th>Bias</th>
+<th>Stringency</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Optimal</td>
+<td>0.25 × CV<sub>I</sub></td>
+<td>0.125 × √(CV<sub>I</sub>² + CV<sub>G</sub>²)</td>
+<td>Most stringent</td>
+</tr>
+<tr class="even">
+<td>Desirable</td>
+<td>0.50 × CV<sub>I</sub></td>
+<td>0.25 × √(CV<sub>I</sub>² + CV<sub>G</sub>²)</td>
+<td>Standard target</td>
+</tr>
+<tr class="odd">
+<td>Minimum</td>
+<td>0.75 × CV<sub>I</sub></td>
+<td>0.375 × √(CV<sub>I</sub>² + CV<sub>G</sub>²)</td>
+<td>Least stringent</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="calculating-specifications-with-ate_from_bv" class="section level2">
+<h2>Calculating Specifications with ate_from_bv()</h2>
+<div id="basic-usage" class="section level3">
+<h3>Basic Usage</h3>
+<p>The <code>ate_from_bv()</code> function calculates all three
+specifications from biological variation data:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Example: Glucose</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co"># CV_I = 5.6%, CV_G = 7.5% (illustrative values)</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>ate_glucose <span class="ot">&lt;-</span> <span class="fu">ate_from_bv</span>(<span class="at">cvi =</span> <span class="fl">5.6</span>, <span class="at">cvg =</span> <span class="fl">7.5</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>ate_glucose</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co">#&gt; Analytical Performance Specifications from Biological Variation</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co">#&gt; ------------------------------------------------------------ </span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#&gt; Input:</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="co">#&gt;   Within-subject CV (CV_I): 5.60%</span></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="co">#&gt;   Between-subject CV (CV_G): 7.50%</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="co">#&gt;   Performance level: desirable</span></span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="co">#&gt;   Coverage factor (k): 1.65</span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="co">#&gt; Specifications:</span></span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="co">#&gt;   Allowable imprecision (CV_A): 2.80%</span></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="co">#&gt;   Allowable bias: 2.34%</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="co">#&gt;   Total allowable error (TEa): 6.96%</span></span></code></pre></div>
+</div>
+<div id="comparing-performance-levels" class="section level3">
+<h3>Comparing Performance Levels</h3>
+<p>The <code>summary()</code> method shows all three performance
+tiers:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">summary</span>(ate_glucose)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt; Analytical Performance Specifications - Detailed Summary</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; ============================================================ </span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt; Biological Variation Data:</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt; ------------------------------------------------------------ </span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt;   Within-subject CV (CV_I):  5.60%</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt;   Between-subject CV (CV_G): 7.50%</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt;   Total BV [sqrt(CV_I^2 + CV_G^2)]: 9.36%</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt; Settings:</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt; ------------------------------------------------------------ </span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt;   Selected performance level: desirable</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt;   Coverage factor (k): 1.65</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt; Formulas (Fraser &amp; Petersen 1993):</span></span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt; ------------------------------------------------------------ </span></span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="co">#&gt;   CV_A  = 0.50 x CV_I</span></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co">#&gt;   Bias  = 0.250 x sqrt(CV_I^2 + CV_G^2)</span></span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="co">#&gt;   TEa   = k x CV_A + Bias</span></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="co">#&gt; Specifications (desirable level):</span></span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="co">#&gt; ------------------------------------------------------------ </span></span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="co">#&gt;   Allowable imprecision (CV_A): 2.80%</span></span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="co">#&gt;   Allowable bias:               2.34%</span></span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a><span class="co">#&gt;   Total allowable error (TEa):  6.96%</span></span>
+<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a><span class="co">#&gt; Comparison Across Performance Levels:</span></span>
+<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a><span class="co">#&gt; ------------------------------------------------------------ </span></span>
+<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a><span class="co">#&gt;   Level            CV_A     Bias      TEa</span></span>
+<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a><span class="co">#&gt;   -----            ----     ----      ---</span></span>
+<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a><span class="co">#&gt;   optimal         1.40%    1.17%    3.48%</span></span>
+<span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a><span class="co">#&gt;   desirable *     2.80%    2.34%    6.96%</span></span>
+<span id="cb3-35"><a href="#cb3-35" tabindex="-1"></a><span class="co">#&gt;   minimum         4.20%    3.51%   10.44%</span></span>
+<span id="cb3-36"><a href="#cb3-36" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-37"><a href="#cb3-37" tabindex="-1"></a><span class="co">#&gt;   * Selected level</span></span>
+<span id="cb3-38"><a href="#cb3-38" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-39"><a href="#cb3-39" tabindex="-1"></a><span class="co">#&gt; Data Source:</span></span>
+<span id="cb3-40"><a href="#cb3-40" tabindex="-1"></a><span class="co">#&gt; ------------------------------------------------------------ </span></span>
+<span id="cb3-41"><a href="#cb3-41" tabindex="-1"></a><span class="co">#&gt;   Biological variation values should be obtained from the EFLM</span></span>
+<span id="cb3-42"><a href="#cb3-42" tabindex="-1"></a><span class="co">#&gt;   Biological Variation Database: https://biologicalvariation.eu/</span></span></code></pre></div>
+</div>
+<div id="different-performance-levels" class="section level3">
+<h3>Different Performance Levels</h3>
+<p>You can calculate specifications for any tier:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Optimal (most stringent)</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>ate_optimal <span class="ot">&lt;-</span> <span class="fu">ate_from_bv</span>(<span class="at">cvi =</span> <span class="fl">5.6</span>, <span class="at">cvg =</span> <span class="fl">7.5</span>, <span class="at">level =</span> <span class="st">&quot;optimal&quot;</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>ate_optimal<span class="sc">$</span>specifications<span class="sc">$</span>tea</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#&gt; [1] 3.480003</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co"># Minimum (least stringent)</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>ate_minimum <span class="ot">&lt;-</span> <span class="fu">ate_from_bv</span>(<span class="at">cvi =</span> <span class="fl">5.6</span>, <span class="at">cvg =</span> <span class="fl">7.5</span>, <span class="at">level =</span> <span class="st">&quot;minimum&quot;</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>ate_minimum<span class="sc">$</span>specifications<span class="sc">$</span>tea</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt; [1] 10.44001</span></span></code></pre></div>
+</div>
+<div id="when-cvg-is-unknown" class="section level3">
+<h3>When CV<sub>G</sub> is Unknown</h3>
+<p>If only within-subject variation is available, imprecision goals can
+still be calculated:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>ate_cv_only <span class="ot">&lt;-</span> <span class="fu">ate_from_bv</span>(<span class="at">cvi =</span> <span class="fl">5.6</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>ate_cv_only</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">#&gt; Analytical Performance Specifications from Biological Variation</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#&gt; ------------------------------------------------------------ </span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt; Input:</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt;   Within-subject CV (CV_I): 5.60%</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt;   Between-subject CV (CV_G): not provided</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt;   Performance level: desirable</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt;   Coverage factor (k): 1.65</span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co">#&gt; Specifications:</span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="co">#&gt;   Allowable imprecision (CV_A): 2.80%</span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&gt;   Allowable bias: requires CV_G</span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="co">#&gt;   Total allowable error (TEa): requires CV_G</span></span></code></pre></div>
+</div>
+</div>
+<div id="the-six-sigma-metric" class="section level2">
+<h2>The Six Sigma Metric</h2>
+<div id="concept-1" class="section level3">
+<h3>Concept</h3>
+<p>The sigma metric provides a standardized way to express method
+quality. It answers: “How many standard deviations of analytical error
+fit between my observed performance and the allowable limit?” <span class="math display">\[\sigma = \frac{TEa - |Bias|}{CV}\]</span></p>
+<p>Higher sigma values indicate better performance:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Sigma</th>
+<th>Category</th>
+<th>Defects per Million</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>≥ 6</td>
+<td>World Class</td>
+<td>~3.4</td>
+</tr>
+<tr class="even">
+<td>≥ 5</td>
+<td>Excellent</td>
+<td>~230</td>
+</tr>
+<tr class="odd">
+<td>≥ 4</td>
+<td>Good</td>
+<td>~6,200</td>
+</tr>
+<tr class="even">
+<td>≥ 3</td>
+<td>Marginal</td>
+<td>~66,800</td>
+</tr>
+<tr class="odd">
+<td>≥ 2</td>
+<td>Poor</td>
+<td>~308,500</td>
+</tr>
+<tr class="even">
+<td>&lt; 2</td>
+<td>Unacceptable</td>
+<td>&gt; 690,000</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="calculating-sigma" class="section level3">
+<h3>Calculating Sigma</h3>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Assume observed: bias = 1.5%, CV = 2.5%</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="co"># Using TEa from biological variation</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>sm <span class="ot">&lt;-</span> <span class="fu">sigma_metric</span>(</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a> <span class="at">bias =</span> <span class="fl">1.5</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>  <span class="at">cv =</span> <span class="fl">2.5</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  <span class="at">tea =</span> ate_glucose<span class="sc">$</span>specifications<span class="sc">$</span>tea</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>)</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>sm</span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co">#&gt; Six Sigma Metric</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------- </span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt; Input:</span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co">#&gt;   Observed bias: 1.50%</span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="co">#&gt;   Observed CV: 2.50%</span></span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="co">#&gt;   Total allowable error (TEa): 6.96%</span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="co">#&gt; Result:</span></span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="co">#&gt;   Sigma: 2.18</span></span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="co">#&gt;   Performance: Poor</span></span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="co">#&gt;   Defect rate: ~308,500 per million</span></span></code></pre></div>
+</div>
+<div id="detailed-sigma-summary" class="section level3">
+<h3>Detailed Sigma Summary</h3>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">summary</span>(sm)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="co">#&gt; Six Sigma Metric - Detailed Summary</span></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt; ================================================== </span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">#&gt; Formula:</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="co">#&gt;   Sigma = (TEa - |Bias|) / CV</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt;   Sigma = (6.96 - |1.50|) / 2.50</span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt;   Sigma = (6.96 - 1.50) / 2.50</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt;   Sigma = 5.46 / 2.50</span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt;   Sigma = 2.18</span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co">#&gt; Result:</span></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="co">#&gt;   Sigma metric: 2.18</span></span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a><span class="co">#&gt;   Performance category: Poor</span></span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a><span class="co">#&gt;   Expected defect rate: ~308,500 per million</span></span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a><span class="co">#&gt; Sigma Scale Reference:</span></span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a><span class="co">#&gt;   Sigma    Category        Defects/Million</span></span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a><span class="co">#&gt;   ------   -------------   ---------------</span></span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a><span class="co">#&gt;   &gt;= 6     World Class                 3.4  </span></span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a><span class="co">#&gt;   &gt;= 5     Excellent                   230  </span></span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a><span class="co">#&gt;   &gt;= 4     Good                      6,210  </span></span>
+<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a><span class="co">#&gt;   &gt;= 3     Marginal                 66,800  </span></span>
+<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a><span class="co">#&gt;   &gt;= 2     Poor                    308,500 *</span></span>
+<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a><span class="co">#&gt;   &lt; 2      Unacceptable          &gt; 690,000  </span></span>
+<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-31"><a href="#cb7-31" tabindex="-1"></a><span class="co">#&gt;   * Current performance level</span></span>
+<span id="cb7-32"><a href="#cb7-32" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-33"><a href="#cb7-33" tabindex="-1"></a><span class="co">#&gt; Note: Defect rates assume 1.5 sigma long-term shift.</span></span></code></pre></div>
+</div>
+<div id="interpreting-sigma-in-clinical-context" class="section level3">
+<h3>Interpreting Sigma in Clinical Context</h3>
+<p>In clinical laboratories:</p>
+<ul>
+<li><strong>Sigma ≥ 6</strong>: Minimal QC needed; method is highly
+reliable</li>
+<li><strong>Sigma 4-6</strong>: Standard QC procedures adequate</li>
+<li><strong>Sigma 3-4</strong>: Enhanced QC recommended; monitor
+closely</li>
+<li><strong>Sigma &lt; 3</strong>: High risk of errors; consider method
+improvement</li>
+</ul>
+</div>
+</div>
+<div id="comprehensive-assessment-with-ate_assessment" class="section level2">
+<h2>Comprehensive Assessment with ate_assessment()</h2>
+<div id="basic-assessment" class="section level3">
+<h3>Basic Assessment</h3>
+<p>The <code>ate_assessment()</code> function evaluates observed
+performance against specifications:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>assess <span class="ot">&lt;-</span> <span class="fu">ate_assessment</span>(</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  <span class="at">bias =</span> <span class="fl">1.5</span>,</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  <span class="at">cv =</span> <span class="fl">2.5</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  <span class="at">tea =</span> ate_glucose<span class="sc">$</span>specifications<span class="sc">$</span>tea</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>)</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>assess</span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="co">#&gt; Analytical Performance Assessment</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="co">#&gt;   &gt;&gt;&gt; METHOD ACCEPTABLE &lt;&lt;&lt;</span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a><span class="co">#&gt; Performance Summary:</span></span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a><span class="co">#&gt;   Parameter              Observed  Allowable     Status</span></span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a><span class="co">#&gt;   -------------------- ---------- ---------- ----------</span></span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a><span class="co">#&gt;   Bias                      1.50%        ---        ---</span></span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a><span class="co">#&gt;   CV (Imprecision)          2.50%        ---        ---</span></span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a><span class="co">#&gt;   Total Error               5.62%      6.96%       PASS</span></span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a><span class="co">#&gt; Sigma Metric: 2.18 (Poor)</span></span></code></pre></div>
+</div>
+<div id="full-component-assessment" class="section level3">
+<h3>Full Component Assessment</h3>
+<p>When you have specifications for all components:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>assess_full <span class="ot">&lt;-</span> <span class="fu">ate_assessment</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>  <span class="at">bias =</span> <span class="fl">1.5</span>,</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>  <span class="at">cv =</span> <span class="fl">2.5</span>,</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  <span class="at">tea =</span> ate_glucose<span class="sc">$</span>specifications<span class="sc">$</span>tea,</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>  <span class="at">allowable_bias =</span> ate_glucose<span class="sc">$</span>specifications<span class="sc">$</span>allowable_bias,</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>  <span class="at">allowable_cv =</span> ate_glucose<span class="sc">$</span>specifications<span class="sc">$</span>allowable_cv</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>)</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="fu">summary</span>(assess_full)</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#&gt; Analytical Performance Assessment - Detailed Summary</span></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="co">#&gt; ============================================================ </span></span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="co">#&gt; Overall Result: METHOD ACCEPTABLE</span></span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="co">#&gt; Observed Performance:</span></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="co">#&gt; ------------------------------------------------------------ </span></span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="co">#&gt;   Bias: 1.50%</span></span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a><span class="co">#&gt;   CV (Imprecision): 2.50%</span></span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a><span class="co">#&gt;   Total Error (k=1.65): 5.62%</span></span>
+<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a><span class="co">#&gt;     [TE = 1.65 x 2.50 + |1.50| = 5.62]</span></span>
+<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a><span class="co">#&gt; Allowable Specifications:</span></span>
+<span id="cb9-23"><a href="#cb9-23" tabindex="-1"></a><span class="co">#&gt; ------------------------------------------------------------ </span></span>
+<span id="cb9-24"><a href="#cb9-24" tabindex="-1"></a><span class="co">#&gt;   Allowable Bias: 2.34%</span></span>
+<span id="cb9-25"><a href="#cb9-25" tabindex="-1"></a><span class="co">#&gt;   Allowable CV: 2.80%</span></span>
+<span id="cb9-26"><a href="#cb9-26" tabindex="-1"></a><span class="co">#&gt;   Total Allowable Error (TEa): 6.96%</span></span>
+<span id="cb9-27"><a href="#cb9-27" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-28"><a href="#cb9-28" tabindex="-1"></a><span class="co">#&gt; Component Assessment:</span></span>
+<span id="cb9-29"><a href="#cb9-29" tabindex="-1"></a><span class="co">#&gt; ------------------------------------------------------------ </span></span>
+<span id="cb9-30"><a href="#cb9-30" tabindex="-1"></a><span class="co">#&gt;   Bias: PASS (margin: +0.84%)</span></span>
+<span id="cb9-31"><a href="#cb9-31" tabindex="-1"></a><span class="co">#&gt;     |1.50| &lt;= 2.34</span></span>
+<span id="cb9-32"><a href="#cb9-32" tabindex="-1"></a><span class="co">#&gt;   CV: PASS (margin: +0.30%)</span></span>
+<span id="cb9-33"><a href="#cb9-33" tabindex="-1"></a><span class="co">#&gt;     2.50 &lt;= 2.80</span></span>
+<span id="cb9-34"><a href="#cb9-34" tabindex="-1"></a><span class="co">#&gt;   Total Error: PASS (margin: +1.34%)</span></span>
+<span id="cb9-35"><a href="#cb9-35" tabindex="-1"></a><span class="co">#&gt;     5.62 &lt;= 6.96</span></span>
+<span id="cb9-36"><a href="#cb9-36" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-37"><a href="#cb9-37" tabindex="-1"></a><span class="co">#&gt; Sigma Metric:</span></span>
+<span id="cb9-38"><a href="#cb9-38" tabindex="-1"></a><span class="co">#&gt; ------------------------------------------------------------ </span></span>
+<span id="cb9-39"><a href="#cb9-39" tabindex="-1"></a><span class="co">#&gt;   Sigma = (TEa - |Bias|) / CV</span></span>
+<span id="cb9-40"><a href="#cb9-40" tabindex="-1"></a><span class="co">#&gt;   Sigma = (6.96 - 1.50) / 2.50 = 2.18</span></span>
+<span id="cb9-41"><a href="#cb9-41" tabindex="-1"></a><span class="co">#&gt;   Category: Poor</span></span>
+<span id="cb9-42"><a href="#cb9-42" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-43"><a href="#cb9-43" tabindex="-1"></a><span class="co">#&gt;   Sigma Scale:</span></span>
+<span id="cb9-44"><a href="#cb9-44" tabindex="-1"></a><span class="co">#&gt;     &gt;= 6: World Class | &gt;= 5: Excellent | &gt;= 4: Good</span></span>
+<span id="cb9-45"><a href="#cb9-45" tabindex="-1"></a><span class="co">#&gt;     &gt;= 3: Marginal    | &gt;= 2: Poor      | &lt; 2: Unacceptable</span></span>
+<span id="cb9-46"><a href="#cb9-46" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-47"><a href="#cb9-47" tabindex="-1"></a><span class="co">#&gt; Interpretation:</span></span>
+<span id="cb9-48"><a href="#cb9-48" tabindex="-1"></a><span class="co">#&gt; ------------------------------------------------------------ </span></span>
+<span id="cb9-49"><a href="#cb9-49" tabindex="-1"></a><span class="co">#&gt;   Method technically passes but sigma &lt; 3 indicates high risk.</span></span>
+<span id="cb9-50"><a href="#cb9-50" tabindex="-1"></a><span class="co">#&gt;   Strongly recommend method improvement or enhanced QC.</span></span></code></pre></div>
+</div>
+<div id="handling-a-failing-method" class="section level3">
+<h3>Handling a Failing Method</h3>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># A method with poor performance</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>assess_poor <span class="ot">&lt;-</span> <span class="fu">ate_assessment</span>(</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>  <span class="at">bias =</span> <span class="fl">4.0</span>,</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>  <span class="at">cv =</span> <span class="fl">5.0</span>,</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>  <span class="at">tea =</span> ate_glucose<span class="sc">$</span>specifications<span class="sc">$</span>tea,</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>  <span class="at">allowable_bias =</span> ate_glucose<span class="sc">$</span>specifications<span class="sc">$</span>allowable_bias,</span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>  <span class="at">allowable_cv =</span> ate_glucose<span class="sc">$</span>specifications<span class="sc">$</span>allowable_cv</span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>)</span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a><span class="fu">summary</span>(assess_poor)</span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a><span class="co">#&gt; Analytical Performance Assessment - Detailed Summary</span></span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a><span class="co">#&gt; ============================================================ </span></span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a><span class="co">#&gt; Overall Result: METHOD NOT ACCEPTABLE</span></span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a><span class="co">#&gt; Observed Performance:</span></span>
+<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a><span class="co">#&gt; ------------------------------------------------------------ </span></span>
+<span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a><span class="co">#&gt;   Bias: 4.00%</span></span>
+<span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a><span class="co">#&gt;   CV (Imprecision): 5.00%</span></span>
+<span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a><span class="co">#&gt;   Total Error (k=1.65): 12.25%</span></span>
+<span id="cb10-21"><a href="#cb10-21" tabindex="-1"></a><span class="co">#&gt;     [TE = 1.65 x 5.00 + |4.00| = 12.25]</span></span>
+<span id="cb10-22"><a href="#cb10-22" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-23"><a href="#cb10-23" tabindex="-1"></a><span class="co">#&gt; Allowable Specifications:</span></span>
+<span id="cb10-24"><a href="#cb10-24" tabindex="-1"></a><span class="co">#&gt; ------------------------------------------------------------ </span></span>
+<span id="cb10-25"><a href="#cb10-25" tabindex="-1"></a><span class="co">#&gt;   Allowable Bias: 2.34%</span></span>
+<span id="cb10-26"><a href="#cb10-26" tabindex="-1"></a><span class="co">#&gt;   Allowable CV: 2.80%</span></span>
+<span id="cb10-27"><a href="#cb10-27" tabindex="-1"></a><span class="co">#&gt;   Total Allowable Error (TEa): 6.96%</span></span>
+<span id="cb10-28"><a href="#cb10-28" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-29"><a href="#cb10-29" tabindex="-1"></a><span class="co">#&gt; Component Assessment:</span></span>
+<span id="cb10-30"><a href="#cb10-30" tabindex="-1"></a><span class="co">#&gt; ------------------------------------------------------------ </span></span>
+<span id="cb10-31"><a href="#cb10-31" tabindex="-1"></a><span class="co">#&gt;   Bias: FAIL (margin: -1.66%)</span></span>
+<span id="cb10-32"><a href="#cb10-32" tabindex="-1"></a><span class="co">#&gt;     |4.00| &gt; 2.34</span></span>
+<span id="cb10-33"><a href="#cb10-33" tabindex="-1"></a><span class="co">#&gt;   CV: FAIL (margin: -2.20%)</span></span>
+<span id="cb10-34"><a href="#cb10-34" tabindex="-1"></a><span class="co">#&gt;     5.00 &gt; 2.80</span></span>
+<span id="cb10-35"><a href="#cb10-35" tabindex="-1"></a><span class="co">#&gt;   Total Error: FAIL (margin: -5.29%)</span></span>
+<span id="cb10-36"><a href="#cb10-36" tabindex="-1"></a><span class="co">#&gt;     12.25 &gt; 6.96</span></span>
+<span id="cb10-37"><a href="#cb10-37" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-38"><a href="#cb10-38" tabindex="-1"></a><span class="co">#&gt; Sigma Metric:</span></span>
+<span id="cb10-39"><a href="#cb10-39" tabindex="-1"></a><span class="co">#&gt; ------------------------------------------------------------ </span></span>
+<span id="cb10-40"><a href="#cb10-40" tabindex="-1"></a><span class="co">#&gt;   Sigma = (TEa - |Bias|) / CV</span></span>
+<span id="cb10-41"><a href="#cb10-41" tabindex="-1"></a><span class="co">#&gt;   Sigma = (6.96 - 4.00) / 5.00 = 0.59</span></span>
+<span id="cb10-42"><a href="#cb10-42" tabindex="-1"></a><span class="co">#&gt;   Category: Unacceptable</span></span>
+<span id="cb10-43"><a href="#cb10-43" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-44"><a href="#cb10-44" tabindex="-1"></a><span class="co">#&gt;   Sigma Scale:</span></span>
+<span id="cb10-45"><a href="#cb10-45" tabindex="-1"></a><span class="co">#&gt;     &gt;= 6: World Class | &gt;= 5: Excellent | &gt;= 4: Good</span></span>
+<span id="cb10-46"><a href="#cb10-46" tabindex="-1"></a><span class="co">#&gt;     &gt;= 3: Marginal    | &gt;= 2: Poor      | &lt; 2: Unacceptable</span></span>
+<span id="cb10-47"><a href="#cb10-47" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-48"><a href="#cb10-48" tabindex="-1"></a><span class="co">#&gt; Interpretation:</span></span>
+<span id="cb10-49"><a href="#cb10-49" tabindex="-1"></a><span class="co">#&gt; ------------------------------------------------------------ </span></span>
+<span id="cb10-50"><a href="#cb10-50" tabindex="-1"></a><span class="co">#&gt;   Method does not meet specifications.</span></span>
+<span id="cb10-51"><a href="#cb10-51" tabindex="-1"></a><span class="co">#&gt;   - Bias exceeds allowable limit: consider recalibration.</span></span>
+<span id="cb10-52"><a href="#cb10-52" tabindex="-1"></a><span class="co">#&gt;   - Imprecision exceeds allowable limit: investigate sources.</span></span>
+<span id="cb10-53"><a href="#cb10-53" tabindex="-1"></a><span class="co">#&gt;   - Total error exceeds TEa: method requires improvement.</span></span></code></pre></div>
+</div>
+</div>
+<div id="complete-workflow-example" class="section level2">
+<h2>Complete Workflow Example</h2>
+<p>Here is a typical workflow for evaluating a new glucose method:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="co"># Step 1: Define quality goals from biological variation</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>specs <span class="ot">&lt;-</span> <span class="fu">ate_from_bv</span>(<span class="at">cvi =</span> <span class="fl">5.6</span>, <span class="at">cvg =</span> <span class="fl">7.5</span>, <span class="at">level =</span> <span class="st">&quot;desirable&quot;</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Quality Specifications:</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="co">#&gt; Quality Specifications:</span></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;  Allowable CV: %.2f%%</span><span class="sc">\n</span><span class="st">&quot;</span>, specs<span class="sc">$</span>specifications<span class="sc">$</span>allowable_cv))</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a><span class="co">#&gt;   Allowable CV: 2.80%</span></span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;  Allowable Bias: %.2f%%</span><span class="sc">\n</span><span class="st">&quot;</span>, specs<span class="sc">$</span>specifications<span class="sc">$</span>allowable_bias))</span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a><span class="co">#&gt;   Allowable Bias: 2.34%</span></span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;  TEa: %.2f%%</span><span class="sc">\n\n</span><span class="st">&quot;</span>, specs<span class="sc">$</span>specifications<span class="sc">$</span>tea))</span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a><span class="co">#&gt;   TEa: 6.96%</span></span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a></span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a><span class="co"># Step 2: Assume we measured method performance</span></span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a><span class="co"># (In practice, from validation studies)</span></span>
+<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a>observed_bias <span class="ot">&lt;-</span> <span class="fl">1.8</span></span>
+<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a>observed_cv <span class="ot">&lt;-</span> <span class="fl">2.2</span></span>
+<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a></span>
+<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a><span class="co"># Step 3: Calculate sigma metric</span></span>
+<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a>sm <span class="ot">&lt;-</span> <span class="fu">sigma_metric</span>(observed_bias, observed_cv, specs<span class="sc">$</span>specifications<span class="sc">$</span>tea)</span>
+<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;Sigma Metric: %.2f (%s)</span><span class="sc">\n\n</span><span class="st">&quot;</span>, sm<span class="sc">$</span>sigma, sm<span class="sc">$</span>interpretation<span class="sc">$</span>category))</span>
+<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a><span class="co">#&gt; Sigma Metric: 2.35 (Poor)</span></span>
+<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a></span>
+<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a><span class="co"># Step 4: Full assessment</span></span>
+<span id="cb11-23"><a href="#cb11-23" tabindex="-1"></a>assessment <span class="ot">&lt;-</span> <span class="fu">ate_assessment</span>(</span>
+<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a>  <span class="at">bias =</span> observed_bias,</span>
+<span id="cb11-25"><a href="#cb11-25" tabindex="-1"></a>  <span class="at">cv =</span> observed_cv,</span>
+<span id="cb11-26"><a href="#cb11-26" tabindex="-1"></a>  <span class="at">tea =</span> specs<span class="sc">$</span>specifications<span class="sc">$</span>tea,</span>
+<span id="cb11-27"><a href="#cb11-27" tabindex="-1"></a>  <span class="at">allowable_bias =</span> specs<span class="sc">$</span>specifications<span class="sc">$</span>allowable_bias,</span>
+<span id="cb11-28"><a href="#cb11-28" tabindex="-1"></a>  <span class="at">allowable_cv =</span> specs<span class="sc">$</span>specifications<span class="sc">$</span>allowable_cv</span>
+<span id="cb11-29"><a href="#cb11-29" tabindex="-1"></a>)</span>
+<span id="cb11-30"><a href="#cb11-30" tabindex="-1"></a></span>
+<span id="cb11-31"><a href="#cb11-31" tabindex="-1"></a><span class="co"># Step 5: Decision</span></span>
+<span id="cb11-32"><a href="#cb11-32" tabindex="-1"></a><span class="cf">if</span> (assessment<span class="sc">$</span>assessment<span class="sc">$</span>overall) {</span>
+<span id="cb11-33"><a href="#cb11-33" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;DECISION: Method acceptable for clinical use</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb11-34"><a href="#cb11-34" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb11-35"><a href="#cb11-35" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;DECISION: Method requires improvement</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb11-36"><a href="#cb11-36" tabindex="-1"></a>}</span>
+<span id="cb11-37"><a href="#cb11-37" tabindex="-1"></a><span class="co">#&gt; DECISION: Method acceptable for clinical use</span></span></code></pre></div>
+</div>
+<div id="obtaining-biological-variation-data" class="section level2">
+<h2>Obtaining Biological Variation Data</h2>
+<p>The quality of your specifications depends on reliable biological
+variation estimates.</p>
+<div id="recommended-source" class="section level3">
+<h3>Recommended Source</h3>
+<p>The <strong>EFLM Biological Variation Database</strong> is the
+current authoritative source:</p>
+<ul>
+<li>Website: <a href="https://biologicalvariation.eu/" class="uri">https://biologicalvariation.eu/</a><br />
+</li>
+<li>Provides rigorously reviewed BV estimates<br />
+</li>
+<li>Includes quality grades for each estimate<br />
+</li>
+<li>Updated regularly with new studies</li>
+</ul>
+</div>
+<div id="using-the-database" class="section level3">
+<h3>Using the Database</h3>
+<ol style="list-style-type: decimal">
+<li>Navigate to <a href="https://biologicalvariation.eu/" class="uri">https://biologicalvariation.eu/</a><br />
+</li>
+<li>Search for your analyte<br />
+</li>
+<li>Review the CV<sub>I</sub> and CV<sub>G</sub> values<br />
+</li>
+<li>Note the quality grade (A, B, C, D) and number of studies<br />
+</li>
+<li>Use values appropriate for your population and context</li>
+</ol>
+</div>
+<div id="important-considerations" class="section level3">
+<h3>Important Considerations</h3>
+<ul>
+<li>BV data may vary by population, age, sex, and health status<br />
+</li>
+<li>Ensure the BV data match your intended use population<br />
+</li>
+<li>Higher quality grades (A, B) indicate more reliable estimates<br />
+</li>
+<li>When multiple estimates exist, consider the range</li>
+</ul>
+</div>
+</div>
+<div id="beyond-biological-variation" class="section level2">
+<h2>Beyond Biological Variation</h2>
+<p>While the biological variation model is widely used, it is not the
+only approach to setting quality specifications. Other models
+include:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Clinical outcome-based</strong>: Specifications derived from
+clinical decision limits<br />
+</li>
+<li><strong>State-of-the-art</strong>: Based on achievable performance
+(e.g., proficiency testing data)<br />
+</li>
+<li><strong>Regulatory requirements</strong>: Fixed limits from agencies
+(e.g., CLIA)</li>
+</ol>
+<p>The <code>ate_assessment()</code> and <code>sigma_metric()</code>
+functions work with TEa values from any source—simply provide your
+specification directly rather than calculating from biological
+variation.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="co"># Using a CLIA-based TEa for glucose (example: ±6 mg/dL or ±10%)</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="co"># For a sample at 100 mg/dL, 10% = 10 mg/dL</span></span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>sm_clia <span class="ot">&lt;-</span> <span class="fu">sigma_metric</span>(<span class="at">bias =</span> <span class="dv">2</span>, <span class="at">cv =</span> <span class="dv">3</span>, <span class="at">tea =</span> <span class="dv">10</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>sm_clia</span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a><span class="co">#&gt; Six Sigma Metric</span></span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------- </span></span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a><span class="co">#&gt; Input:</span></span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a><span class="co">#&gt;   Observed bias: 2.00%</span></span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a><span class="co">#&gt;   Observed CV: 3.00%</span></span>
+<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a><span class="co">#&gt;   Total allowable error (TEa): 10.00%</span></span>
+<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a><span class="co">#&gt; Result:</span></span>
+<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a><span class="co">#&gt;   Sigma: 2.67</span></span>
+<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a><span class="co">#&gt;   Performance: Poor</span></span>
+<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a><span class="co">#&gt;   Defect rate: ~308,500 per million</span></span></code></pre></div>
+</div>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p>The biological variation model provides a scientifically grounded
+approach to setting analytical quality specifications:</p>
+<ol style="list-style-type: decimal">
+<li><strong><code>ate_from_bv()</code></strong> translates biological
+variation into actionable specifications<br />
+</li>
+<li><strong><code>sigma_metric()</code></strong> provides a universal
+quality scale for comparing methods<br />
+</li>
+<li><strong><code>ate_assessment()</code></strong> gives a clear
+pass/fail evaluation</li>
+</ol>
+<p>These tools help laboratories make informed decisions about method
+acceptability while recognizing that the final decision depends on
+clinical context and regulatory requirements.</p>
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+<p>Fraser CG, Petersen PH (1993). Desirable standards for laboratory
+tests if they are to fulfill medical needs. Clinical Chemistry,
+39(7):1447-1453.</p>
+<p>Ricos C, Alvarez V, Cava F, et al. (1999). Current databases on
+biological variation: pros, cons and progress. Scandinavian Journal of
+Clinical and Laboratory Investigation, 59(7):491-500.</p>
+<p>Aarsand AK, Fernandez-Calle P, Webster C, et al. (2020). The EFLM
+Biological Variation Database. <a href="https://biologicalvariation.eu/" class="uri">https://biologicalvariation.eu/</a></p>
+<p>Westgard JO, Westgard SA (2006). The quality of laboratory testing
+today: an assessment of sigma metrics for analytic quality using
+performance data from proficiency testing surveys and the CLIA criteria
+for acceptable performance. American Journal of Clinical Pathology,
+125(3):343-354.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

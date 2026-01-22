@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Marcello Grassi" />
+
+
+<title>Deming Regression for Method Comparison</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Deming Regression for Method
+Comparison</h1>
+<h4 class="author">Marcello Grassi</h4>
+
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>Deming regression is a method for fitting a linear relationship when
+both variables are measured with error. Unlike ordinary least squares
+(OLS), which assumes the independent variable is measured without error,
+Deming regression accounts for measurement uncertainty in both the
+reference and test methods. This makes it particularly appropriate for
+method comparison studies in clinical laboratories.</p>
+<p>This vignette introduces the theory behind Deming regression,
+demonstrates its use with the <code>valytics</code> package, and
+provides guidance on when to choose Deming regression over alternatives
+like Passing-Bablok regression.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(valytics)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span></code></pre></div>
+</div>
+<div id="the-problem-with-ordinary-least-squares" class="section level2">
+<h2>The Problem with Ordinary Least Squares</h2>
+<p>When comparing two analytical methods, a common approach is to
+regress the test method (Y) on the reference method (X) using OLS.
+However, OLS assumes that X is measured without error — an assumption
+that rarely holds in practice.</p>
+<p>When both X and Y contain measurement error, OLS produces biased
+estimates:</p>
+<ul>
+<li>The slope is <strong>attenuated</strong> (biased toward zero)</li>
+<li>The intercept is <strong>biased</strong> away from the true
+value</li>
+</ul>
+<p>This phenomenon, known as <em>regression dilution</em> or
+<em>attenuation bias</em>, can lead to incorrect conclusions about
+method agreement.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co"># True relationship: Y = 1.0 * X (perfect agreement)</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>true_values <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">50</span>, <span class="dv">150</span>, <span class="at">length.out =</span> <span class="dv">100</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co"># Both methods have measurement error</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>x_observed <span class="ot">&lt;-</span> true_values <span class="sc">+</span> <span class="fu">rnorm</span>(<span class="dv">100</span>, <span class="at">sd =</span> <span class="dv">10</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>y_observed <span class="ot">&lt;-</span> true_values <span class="sc">+</span> <span class="fu">rnorm</span>(<span class="dv">100</span>, <span class="at">sd =</span> <span class="dv">10</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="co"># Compare OLS vs Deming</span></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>ols_fit <span class="ot">&lt;-</span> <span class="fu">lm</span>(y_observed <span class="sc">~</span> x_observed)</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>dm_fit <span class="ot">&lt;-</span> <span class="fu">deming_regression</span>(x_observed, y_observed)</span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="co"># Visualize</span></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">x =</span> x_observed, <span class="at">y =</span> y_observed)</span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y)) <span class="sc">+</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">slope =</span> <span class="dv">1</span>, <span class="at">linetype =</span> <span class="st">&quot;solid&quot;</span>, </span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a>              <span class="at">color =</span> <span class="st">&quot;gray50&quot;</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="fu">coef</span>(ols_fit)[<span class="dv">1</span>], <span class="at">slope =</span> <span class="fu">coef</span>(ols_fit)[<span class="dv">2</span>],</span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a>              <span class="at">color =</span> <span class="st">&quot;red&quot;</span>, <span class="at">linewidth =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">intercept =</span> dm_fit<span class="sc">$</span>results<span class="sc">$</span>intercept, <span class="at">slope =</span> dm_fit<span class="sc">$</span>results<span class="sc">$</span>slope,</span>
+<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a>              <span class="at">color =</span> <span class="st">&quot;blue&quot;</span>, <span class="at">linewidth =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="at">x =</span> <span class="dv">60</span>, <span class="at">y =</span> <span class="dv">145</span>, <span class="at">label =</span> <span class="st">&quot;True (slope = 1)&quot;</span>, <span class="at">color =</span> <span class="st">&quot;gray30&quot;</span>) <span class="sc">+</span></span>
+<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="at">x =</span> <span class="dv">60</span>, <span class="at">y =</span> <span class="dv">138</span>, </span>
+<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a>           <span class="at">label =</span> <span class="fu">sprintf</span>(<span class="st">&quot;OLS (slope = %.3f)&quot;</span>, <span class="fu">coef</span>(ols_fit)[<span class="dv">2</span>]), <span class="at">color =</span> <span class="st">&quot;red&quot;</span>) <span class="sc">+</span></span>
+<span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="at">x =</span> <span class="dv">60</span>, <span class="at">y =</span> <span class="dv">131</span>,</span>
+<span id="cb2-29"><a href="#cb2-29" tabindex="-1"></a>           <span class="at">label =</span> <span class="fu">sprintf</span>(<span class="st">&quot;Deming (slope = %.3f)&quot;</span>, dm_fit<span class="sc">$</span>results<span class="sc">$</span>slope), <span class="at">color =</span> <span class="st">&quot;blue&quot;</span>) <span class="sc">+</span></span>
+<span id="cb2-30"><a href="#cb2-30" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Attenuation Bias in OLS Regression&quot;</span>,</span>
+<span id="cb2-31"><a href="#cb2-31" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">&quot;Method X&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Method Y&quot;</span>) <span class="sc">+</span></span>
+<span id="cb2-32"><a href="#cb2-32" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="data:image/png;base64,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" alt="Demonstration of attenuation bias: OLS slope is attenuated when X has measurement error." />
+<p class="caption">
+Demonstration of attenuation bias: OLS slope is attenuated when X has
+measurement error.
+</p>
+</div>
+<p>Notice how the OLS slope is attenuated (less than 1), while Deming
+regression recovers a slope closer to the true value of 1.</p>
+</div>
+<div id="deming-regression-theory" class="section level2">
+<h2>Deming Regression Theory</h2>
+<p>Deming regression minimizes the sum of squared perpendicular
+distances from points to the regression line, weighted by the error
+variance ratio. The model assumes:</p>
+<p><span class="math display">\[Y_i = \alpha + \beta X_i^* +
+\epsilon_i\]</span> <span class="math display">\[X_i = X_i^* +
+\delta_i\]</span></p>
+<p>where <span class="math inline">\(X_i^*\)</span> is the true
+(unobserved) value, and <span class="math inline">\(\epsilon_i\)</span>
+and <span class="math inline">\(\delta_i\)</span> are measurement errors
+in Y and X respectively.</p>
+<div id="the-error-ratio-λ" class="section level3">
+<h3>The Error Ratio (λ)</h3>
+<p>The key parameter in Deming regression is the <strong>error
+ratio</strong> (lambda, λ):</p>
+<p><span class="math display">\[\lambda =
+\frac{\text{Var}(\epsilon)}{\text{Var}(\delta)} = \frac{\text{Var(error
+in Y)}}{\text{Var(error in X)}}\]</span></p>
+<p>When λ = 1, both methods have equal error variance, and Deming
+regression becomes <strong>orthogonal regression</strong> (also called
+total least squares). This minimizes perpendicular distances to the
+line.</p>
+</div>
+<div id="choosing-the-error-ratio" class="section level3">
+<h3>Choosing the Error Ratio</h3>
+<p>The error ratio can be determined by:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Assuming equal precision</strong> (λ = 1): Appropriate when
+both methods have similar analytical performance</li>
+<li><strong>Using CV ratios</strong>: <span class="math inline">\(\lambda = (CV_Y / CV_X)^2\)</span> when CVs are
+known from validation studies</li>
+<li><strong>Using replicate data</strong>: Estimate variance components
+from replicate measurements</li>
+</ol>
+</div>
+</div>
+<div id="basic-usage" class="section level2">
+<h2>Basic Usage</h2>
+<p>The <code>deming_regression()</code> function follows the same
+interface as other <code>valytics</code> functions:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># Load example data</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;glucose_methods&quot;</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co"># Deming regression with default settings (lambda = 1)</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>dm <span class="ot">&lt;-</span> <span class="fu">deming_regression</span>(reference <span class="sc">~</span> poc_meter, <span class="at">data =</span> glucose_methods)</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>dm</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt; Deming Regression</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------- </span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt; n = 60 paired observations</span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt; Error ratio (lambda): 1.000</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt; CI method: Jackknife</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt; Confidence level: 95%</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co">#&gt; Regression equation:</span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt;   reference = -4.481 + 0.991 * poc_meter</span></span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="co">#&gt; Results:</span></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co">#&gt;   Intercept: -4.481 (SE = 3.074)</span></span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="co">#&gt;     95% CI: [-10.635, 1.673]</span></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="co">#&gt;     (includes 0: no significant constant bias)</span></span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="co">#&gt;   Slope: 0.991 (SE = 0.027)</span></span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="co">#&gt;     95% CI: [0.936, 1.046]</span></span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="co">#&gt;     (includes 1: no significant proportional bias)</span></span></code></pre></div>
+<p>The output shows:</p>
+<ul>
+<li><strong>Error ratio</strong>: The λ value used (1 = orthogonal
+regression)</li>
+<li><strong>Regression equation</strong>: The fitted line</li>
+<li><strong>Slope and intercept</strong>: Point estimates with
+confidence intervals</li>
+<li><strong>Interpretation</strong>: Whether CIs include the null values
+(0 for intercept, 1 for slope)</li>
+</ul>
+</div>
+<div id="detailed-results" class="section level2">
+<h2>Detailed Results</h2>
+<p>The <code>summary()</code> method provides comprehensive output:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">summary</span>(dm)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt; Deming Regression - Detailed Summary</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#&gt; ================================================== </span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#&gt; Data:</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt;   X variable: poc_meter</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt;   Y variable: reference</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt;   Sample size: 60</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; Settings:</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt;   Error ratio (lambda): 1.0000</span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt;     (orthogonal regression - equal error variances assumed)</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt;   Confidence level: 95%</span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt;   CI method: Jackknife</span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt; Regression Coefficients:</span></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt;           Estimate Std. Error 95% Lower 95% Upper</span></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt; Intercept  -4.4807     3.0744  -10.6349    1.6734</span></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co">#&gt; Slope       0.9911     0.0273    0.9364    1.0457</span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="co">#&gt; Regression equation:</span></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="co">#&gt;   reference = -4.4807 + 0.9911 * poc_meter</span></span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="co">#&gt; Interpretation:</span></span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="co">#&gt;   Intercept: CI includes 0</span></span>
+<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a><span class="co">#&gt;     -&gt; No significant constant (additive) bias</span></span>
+<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a><span class="co">#&gt;   Slope: CI includes 1</span></span>
+<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a><span class="co">#&gt;     -&gt; No significant proportional (multiplicative) bias</span></span>
+<span id="cb4-32"><a href="#cb4-32" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-33"><a href="#cb4-33" tabindex="-1"></a><span class="co">#&gt; Conclusion:</span></span>
+<span id="cb4-34"><a href="#cb4-34" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb4-35"><a href="#cb4-35" tabindex="-1"></a><span class="co">#&gt;   The two methods are EQUIVALENT within the measured range.</span></span>
+<span id="cb4-36"><a href="#cb4-36" tabindex="-1"></a><span class="co">#&gt;   No systematic differences detected.</span></span>
+<span id="cb4-37"><a href="#cb4-37" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-38"><a href="#cb4-38" tabindex="-1"></a><span class="co">#&gt; Residuals (perpendicular):</span></span>
+<span id="cb4-39"><a href="#cb4-39" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb4-40"><a href="#cb4-40" tabindex="-1"></a><span class="co">#&gt;     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. </span></span>
+<span id="cb4-41"><a href="#cb4-41" tabindex="-1"></a><span class="co">#&gt; -17.3800  -2.7747  -0.3476   0.0000   2.7091  17.8990 </span></span>
+<span id="cb4-42"><a href="#cb4-42" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-43"><a href="#cb4-43" tabindex="-1"></a><span class="co">#&gt; Note on error ratio:</span></span>
+<span id="cb4-44"><a href="#cb4-44" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb4-45"><a href="#cb4-45" tabindex="-1"></a><span class="co">#&gt;   Using lambda = 1 (orthogonal regression).</span></span>
+<span id="cb4-46"><a href="#cb4-46" tabindex="-1"></a><span class="co">#&gt;   This assumes both methods have equal measurement error variance.</span></span>
+<span id="cb4-47"><a href="#cb4-47" tabindex="-1"></a><span class="co">#&gt;   If this assumption is violated, consider specifying &#39;error_ratio&#39;</span></span>
+<span id="cb4-48"><a href="#cb4-48" tabindex="-1"></a><span class="co">#&gt;   based on replicate measurements or known precision data.</span></span></code></pre></div>
+</div>
+<div id="visualization" class="section level2">
+<h2>Visualization</h2>
+<p>The <code>plot()</code> method creates publication-ready figures:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">plot</span>(dm)</span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="data:image/png;base64,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" alt="Deming regression scatter plot with confidence band." />
+<p class="caption">
+Deming regression scatter plot with confidence band.
+</p>
+</div>
+<div id="residual-diagnostics" class="section level3">
+<h3>Residual Diagnostics</h3>
+<p>Examine residuals to check model assumptions:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">plot</span>(dm, <span class="at">type =</span> <span class="st">&quot;residuals&quot;</span>)</span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="data:image/png;base64,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" alt="Residual plot for assessing model fit." />
+<p class="caption">
+Residual plot for assessing model fit.
+</p>
+</div>
+<p>Look for:</p>
+<ul>
+<li><strong>Random scatter around zero</strong>: Good model fit</li>
+<li><strong>Trends</strong>: Suggest non-linearity</li>
+<li><strong>Funnel shape</strong>: Suggest heteroscedasticity
+(non-constant variance)</li>
+</ul>
+</div>
+</div>
+<div id="specifying-the-error-ratio" class="section level2">
+<h2>Specifying the Error Ratio</h2>
+<p>When methods have different precision, specify the error ratio:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># If POC meter has twice the error variance of the reference</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>dm_lambda2 <span class="ot">&lt;-</span> <span class="fu">deming_regression</span>(</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  reference <span class="sc">~</span> poc_meter, </span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  <span class="at">data =</span> glucose_methods,</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="at">error_ratio =</span> <span class="dv">2</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>)</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>dm_lambda2</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt; Deming Regression</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------- </span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt; n = 60 paired observations</span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co">#&gt; Error ratio (lambda): 2.000</span></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="co">#&gt; CI method: Jackknife</span></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="co">#&gt; Confidence level: 95%</span></span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a><span class="co">#&gt; Regression equation:</span></span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a><span class="co">#&gt;   reference = -4.192 + 0.989 * poc_meter</span></span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a><span class="co">#&gt; Results:</span></span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a><span class="co">#&gt;   Intercept: -4.192 (SE = 3.063)</span></span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a><span class="co">#&gt;     95% CI: [-10.323, 1.939]</span></span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a><span class="co">#&gt;     (includes 0: no significant constant bias)</span></span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a><span class="co">#&gt;   Slope: 0.989 (SE = 0.027)</span></span>
+<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a><span class="co">#&gt;     95% CI: [0.935, 1.043]</span></span>
+<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a><span class="co">#&gt;     (includes 1: no significant proportional bias)</span></span></code></pre></div>
+<div id="estimating-λ-from-cvs" class="section level3">
+<h3>Estimating λ from CVs</h3>
+<p>If you know the coefficients of variation from method validation:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="co"># Example: Reference CV = 2.5%, POC CV = 4.5%</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>cv_reference <span class="ot">&lt;-</span> <span class="fl">0.025</span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>cv_poc <span class="ot">&lt;-</span> <span class="fl">0.045</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>lambda_estimated <span class="ot">&lt;-</span> (cv_poc <span class="sc">/</span> cv_reference)<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="co"># lambda_estimated = 3.24</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>dm_cv <span class="ot">&lt;-</span> <span class="fu">deming_regression</span>(</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>  reference <span class="sc">~</span> poc_meter,</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>  <span class="at">data =</span> glucose_methods,</span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>  <span class="at">error_ratio =</span> lambda_estimated</span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+</div>
+<div id="confidence-interval-methods" class="section level2">
+<h2>Confidence Interval Methods</h2>
+<p>Two methods are available for computing confidence intervals:</p>
+<div id="jackknife-default" class="section level3">
+<h3>Jackknife (Default)</h3>
+<p>The jackknife method, following Linnet (1990), provides robust
+standard error estimates:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>dm_jack <span class="ot">&lt;-</span> <span class="fu">deming_regression</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>  reference <span class="sc">~</span> poc_meter,</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>  <span class="at">data =</span> glucose_methods,</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  <span class="at">ci_method =</span> <span class="st">&quot;jackknife&quot;</span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>)</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co"># Standard errors are available</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Slope SE:&quot;</span>, <span class="fu">round</span>(dm_jack<span class="sc">$</span>results<span class="sc">$</span>slope_se, <span class="dv">4</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; Slope SE: 0.0273</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Intercept SE:&quot;</span>, <span class="fu">round</span>(dm_jack<span class="sc">$</span>results<span class="sc">$</span>intercept_se, <span class="dv">4</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="co">#&gt; Intercept SE: 3.0744</span></span></code></pre></div>
+</div>
+<div id="bootstrap-bca" class="section level3">
+<h3>Bootstrap BCa</h3>
+<p>For smaller samples or when parametric assumptions are
+questionable:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>dm_boot <span class="ot">&lt;-</span> <span class="fu">deming_regression</span>(</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>  reference <span class="sc">~</span> poc_meter,</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>  <span class="at">data =</span> glucose_methods,</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>  <span class="at">ci_method =</span> <span class="st">&quot;bootstrap&quot;</span>,</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>  <span class="at">boot_n =</span> <span class="dv">1999</span></span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+</div>
+<div id="comparison-with-passing-bablok" class="section level2">
+<h2>Comparison with Passing-Bablok</h2>
+<p>Both Deming and Passing-Bablok regression are appropriate for method
+comparison, but they have different characteristics:</p>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="29%" />
+<col width="37%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Aspect</th>
+<th>Deming</th>
+<th>Passing-Bablok</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Approach</strong></td>
+<td>Parametric</td>
+<td>Non-parametric</td>
+</tr>
+<tr class="even">
+<td><strong>Error assumption</strong></td>
+<td>Normally distributed</td>
+<td>Distribution-free</td>
+</tr>
+<tr class="odd">
+<td><strong>Outlier sensitivity</strong></td>
+<td>Sensitive</td>
+<td>Robust</td>
+</tr>
+<tr class="even">
+<td><strong>Error ratio</strong></td>
+<td>User-specified (λ)</td>
+<td>Implicitly assumes equal</td>
+</tr>
+<tr class="odd">
+<td><strong>Sample size</strong></td>
+<td>Works with smaller n</td>
+<td>Needs ~30+ for stable CIs</td>
+</tr>
+<tr class="even">
+<td><strong>Ties</strong></td>
+<td>Handles ties</td>
+<td>Can be affected by ties</td>
+</tr>
+</tbody>
+</table>
+<div id="when-to-use-deming" class="section level3">
+<h3>When to Use Deming</h3>
+<ul>
+<li>You have knowledge about the error ratio (from validation data)</li>
+<li>Data are approximately normally distributed</li>
+<li>No severe outliers</li>
+<li>Smaller sample sizes (n &lt; 30)</li>
+</ul>
+</div>
+<div id="when-to-use-passing-bablok" class="section level3">
+<h3>When to Use Passing-Bablok</h3>
+<ul>
+<li>Error structure is unknown</li>
+<li>Potential outliers in the data</li>
+<li>Non-normal error distributions</li>
+<li>Larger sample sizes available</li>
+</ul>
+</div>
+<div id="side-by-side-comparison" class="section level3">
+<h3>Side-by-Side Comparison</h3>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="co"># Fit both models</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>dm <span class="ot">&lt;-</span> <span class="fu">deming_regression</span>(reference <span class="sc">~</span> poc_meter, <span class="at">data =</span> glucose_methods)</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>pb <span class="ot">&lt;-</span> <span class="fu">pb_regression</span>(reference <span class="sc">~</span> poc_meter, <span class="at">data =</span> glucose_methods)</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a><span class="co"># Compare coefficients</span></span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>comparison <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>  <span class="at">Method =</span> <span class="fu">c</span>(<span class="st">&quot;Deming&quot;</span>, <span class="st">&quot;Passing-Bablok&quot;</span>),</span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>  <span class="at">Slope =</span> <span class="fu">c</span>(dm<span class="sc">$</span>results<span class="sc">$</span>slope, pb<span class="sc">$</span>results<span class="sc">$</span>slope),</span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>  <span class="at">Slope_Lower =</span> <span class="fu">c</span>(dm<span class="sc">$</span>results<span class="sc">$</span>slope_ci[<span class="st">&quot;lower&quot;</span>], pb<span class="sc">$</span>results<span class="sc">$</span>slope_ci[<span class="st">&quot;lower&quot;</span>]),</span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a>  <span class="at">Slope_Upper =</span> <span class="fu">c</span>(dm<span class="sc">$</span>results<span class="sc">$</span>slope_ci[<span class="st">&quot;upper&quot;</span>], pb<span class="sc">$</span>results<span class="sc">$</span>slope_ci[<span class="st">&quot;upper&quot;</span>]),</span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a>  <span class="at">Intercept =</span> <span class="fu">c</span>(dm<span class="sc">$</span>results<span class="sc">$</span>intercept, pb<span class="sc">$</span>results<span class="sc">$</span>intercept),</span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a>  <span class="at">Int_Lower =</span> <span class="fu">c</span>(dm<span class="sc">$</span>results<span class="sc">$</span>intercept_ci[<span class="st">&quot;lower&quot;</span>], pb<span class="sc">$</span>results<span class="sc">$</span>intercept_ci[<span class="st">&quot;lower&quot;</span>]),</span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a>  <span class="at">Int_Upper =</span> <span class="fu">c</span>(dm<span class="sc">$</span>results<span class="sc">$</span>intercept_ci[<span class="st">&quot;upper&quot;</span>], pb<span class="sc">$</span>results<span class="sc">$</span>intercept_ci[<span class="st">&quot;upper&quot;</span>])</span>
+<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a>)</span>
+<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a></span>
+<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a><span class="fu">print</span>(comparison, <span class="at">digits =</span> <span class="dv">3</span>)</span>
+<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a><span class="co">#&gt;           Method Slope Slope_Lower Slope_Upper Intercept Int_Lower Int_Upper</span></span>
+<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a><span class="co">#&gt; 1         Deming 0.991       0.936       1.046     -4.48    -10.63      1.67</span></span>
+<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a><span class="co">#&gt; 2 Passing-Bablok 0.973       0.963       0.985     -2.79     -4.32     -1.91</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="co"># Visual comparison</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="fu">ggplot</span>(glucose_methods, <span class="fu">aes</span>(<span class="at">x =</span> reference, <span class="at">y =</span> poc_meter)) <span class="sc">+</span></span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">slope =</span> <span class="dv">1</span>, <span class="at">linetype =</span> <span class="st">&quot;dashed&quot;</span>, <span class="at">color =</span> <span class="st">&quot;gray50&quot;</span>) <span class="sc">+</span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">intercept =</span> dm<span class="sc">$</span>results<span class="sc">$</span>intercept, <span class="at">slope =</span> dm<span class="sc">$</span>results<span class="sc">$</span>slope,</span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>              <span class="at">color =</span> <span class="st">&quot;#2166AC&quot;</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">intercept =</span> pb<span class="sc">$</span>results<span class="sc">$</span>intercept, <span class="at">slope =</span> pb<span class="sc">$</span>results<span class="sc">$</span>slope,</span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a>              <span class="at">color =</span> <span class="st">&quot;#B2182B&quot;</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="at">x =</span> <span class="dv">80</span>, <span class="at">y =</span> <span class="dv">340</span>, <span class="at">label =</span> <span class="st">&quot;Identity&quot;</span>, <span class="at">color =</span> <span class="st">&quot;gray50&quot;</span>) <span class="sc">+</span></span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="at">x =</span> <span class="dv">80</span>, <span class="at">y =</span> <span class="dv">320</span>, <span class="at">label =</span> <span class="st">&quot;Deming&quot;</span>, <span class="at">color =</span> <span class="st">&quot;#2166AC&quot;</span>) <span class="sc">+</span></span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="at">x =</span> <span class="dv">80</span>, <span class="at">y =</span> <span class="dv">300</span>, <span class="at">label =</span> <span class="st">&quot;Passing-Bablok&quot;</span>, <span class="at">color =</span> <span class="st">&quot;#B2182B&quot;</span>) <span class="sc">+</span></span>
+<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Regression Method Comparison&quot;</span>,</span>
+<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">&quot;Reference (mg/dL)&quot;</span>,</span>
+<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">&quot;POC Meter (mg/dL)&quot;</span>) <span class="sc">+</span></span>
+<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="data:image/png;base64,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" alt="Visual comparison of Deming and Passing-Bablok regression lines." />
+<p class="caption">
+Visual comparison of Deming and Passing-Bablok regression lines.
+</p>
+</div>
+</div>
+</div>
+<div id="complete-workflow-example" class="section level2">
+<h2>Complete Workflow Example</h2>
+<p>Here is a complete method comparison workflow using the creatinine
+dataset:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="co"># Load data</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;creatinine_serum&quot;</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="co"># 1. Deming regression</span></span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>dm <span class="ot">&lt;-</span> <span class="fu">deming_regression</span>(enzymatic <span class="sc">~</span> jaffe, <span class="at">data =</span> creatinine_serum)</span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="co"># 2. View summary</span></span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a><span class="fu">summary</span>(dm)</span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a><span class="co">#&gt; Deming Regression - Detailed Summary</span></span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a><span class="co">#&gt; ================================================== </span></span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a><span class="co">#&gt; Data:</span></span>
+<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a><span class="co">#&gt;   X variable: jaffe</span></span>
+<span id="cb13-15"><a href="#cb13-15" tabindex="-1"></a><span class="co">#&gt;   Y variable: enzymatic</span></span>
+<span id="cb13-16"><a href="#cb13-16" tabindex="-1"></a><span class="co">#&gt;   Sample size: 80</span></span>
+<span id="cb13-17"><a href="#cb13-17" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb13-18"><a href="#cb13-18" tabindex="-1"></a><span class="co">#&gt; Settings:</span></span>
+<span id="cb13-19"><a href="#cb13-19" tabindex="-1"></a><span class="co">#&gt;   Error ratio (lambda): 1.0000</span></span>
+<span id="cb13-20"><a href="#cb13-20" tabindex="-1"></a><span class="co">#&gt;     (orthogonal regression - equal error variances assumed)</span></span>
+<span id="cb13-21"><a href="#cb13-21" tabindex="-1"></a><span class="co">#&gt;   Confidence level: 95%</span></span>
+<span id="cb13-22"><a href="#cb13-22" tabindex="-1"></a><span class="co">#&gt;   CI method: Jackknife</span></span>
+<span id="cb13-23"><a href="#cb13-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb13-24"><a href="#cb13-24" tabindex="-1"></a><span class="co">#&gt; Regression Coefficients:</span></span>
+<span id="cb13-25"><a href="#cb13-25" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb13-26"><a href="#cb13-26" tabindex="-1"></a><span class="co">#&gt;           Estimate Std. Error 95% Lower 95% Upper</span></span>
+<span id="cb13-27"><a href="#cb13-27" tabindex="-1"></a><span class="co">#&gt; Intercept  -0.2908     0.0323   -0.3550   -0.2265</span></span>
+<span id="cb13-28"><a href="#cb13-28" tabindex="-1"></a><span class="co">#&gt; Slope       1.0488     0.0157    1.0175    1.0801</span></span>
+<span id="cb13-29"><a href="#cb13-29" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb13-30"><a href="#cb13-30" tabindex="-1"></a><span class="co">#&gt; Regression equation:</span></span>
+<span id="cb13-31"><a href="#cb13-31" tabindex="-1"></a><span class="co">#&gt;   enzymatic = -0.2908 + 1.0488 * jaffe</span></span>
+<span id="cb13-32"><a href="#cb13-32" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb13-33"><a href="#cb13-33" tabindex="-1"></a><span class="co">#&gt; Interpretation:</span></span>
+<span id="cb13-34"><a href="#cb13-34" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb13-35"><a href="#cb13-35" tabindex="-1"></a><span class="co">#&gt;   Intercept: CI excludes 0 (-0.355 to -0.227)</span></span>
+<span id="cb13-36"><a href="#cb13-36" tabindex="-1"></a><span class="co">#&gt;     -&gt; Significant negative constant bias of -0.291</span></span>
+<span id="cb13-37"><a href="#cb13-37" tabindex="-1"></a><span class="co">#&gt;   Slope: CI excludes 1 (1.018 to 1.080)</span></span>
+<span id="cb13-38"><a href="#cb13-38" tabindex="-1"></a><span class="co">#&gt;     -&gt; Significant proportional bias of 4.9%</span></span>
+<span id="cb13-39"><a href="#cb13-39" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb13-40"><a href="#cb13-40" tabindex="-1"></a><span class="co">#&gt; Conclusion:</span></span>
+<span id="cb13-41"><a href="#cb13-41" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb13-42"><a href="#cb13-42" tabindex="-1"></a><span class="co">#&gt;   The two methods show SYSTEMATIC DIFFERENCES:</span></span>
+<span id="cb13-43"><a href="#cb13-43" tabindex="-1"></a><span class="co">#&gt;     - Constant bias: 0.291 enzymatic</span></span>
+<span id="cb13-44"><a href="#cb13-44" tabindex="-1"></a><span class="co">#&gt;     - Proportional bias: 4.9%</span></span>
+<span id="cb13-45"><a href="#cb13-45" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb13-46"><a href="#cb13-46" tabindex="-1"></a><span class="co">#&gt; Residuals (perpendicular):</span></span>
+<span id="cb13-47"><a href="#cb13-47" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb13-48"><a href="#cb13-48" tabindex="-1"></a><span class="co">#&gt;      Min.   1st Qu.    Median      Mean   3rd Qu.      Max. </span></span>
+<span id="cb13-49"><a href="#cb13-49" tabindex="-1"></a><span class="co">#&gt; -0.390154 -0.039726  0.008273  0.000000  0.059742  0.475833 </span></span>
+<span id="cb13-50"><a href="#cb13-50" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb13-51"><a href="#cb13-51" tabindex="-1"></a><span class="co">#&gt; Note on error ratio:</span></span>
+<span id="cb13-52"><a href="#cb13-52" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb13-53"><a href="#cb13-53" tabindex="-1"></a><span class="co">#&gt;   Using lambda = 1 (orthogonal regression).</span></span>
+<span id="cb13-54"><a href="#cb13-54" tabindex="-1"></a><span class="co">#&gt;   This assumes both methods have equal measurement error variance.</span></span>
+<span id="cb13-55"><a href="#cb13-55" tabindex="-1"></a><span class="co">#&gt;   If this assumption is violated, consider specifying &#39;error_ratio&#39;</span></span>
+<span id="cb13-56"><a href="#cb13-56" tabindex="-1"></a><span class="co">#&gt;   based on replicate measurements or known precision data.</span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="co"># 3. Create visualization</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="fu">plot</span>(dm, <span class="at">title =</span> <span class="st">&quot;Creatinine: Jaffe vs Enzymatic Method&quot;</span>)</span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAkAAAAGACAMAAAByRC0tAAAB2lBMVEUAAAAAAAEAADoAAGYAAQIAOjoAOmYAOpAAZmYAZrYBAQEBAgQCAgICBgsFEBwGBQUGBgYNKUUODA0PDg4PDw8QEBAhZqwkHyAmIiImJiYpKSkzMzM6AAA6ADo6AGY6OmY6OpA6ZpA6ZrY6kJA6kLY6kNtNTU1NTW5NTY5NbqtNjshaTU9eXl5gVFVmAABmADpmAGZmOgBmOjpmOpBmZjpmZmZmZoFmZp1mgbZmkLZmkNtmnc9mtttmtv9uTU1uTW5uTY5ubo5ubqtuq+SBZmaBZoGBZp2BgWaBgbaBnc+Bts+BtueOTU2OTW6OTY6Obk2ObquOyP+QOgCQOjqQOmaQZgCQZjqQkGaQtpCQttuQ27aQ29uQ2/+dZmadZoGdZp2dtradtuedz/+rbk2rbm6rjk2r5OSr5P+2ZgC2Zjq2gWa2gYG2kDq2kGa2tma2toG2tpC225C227a229u22/+25/+2/7a2///Ijk3I///PnWbPtoHP57bP///bkDrbkGbbtmbbtpDb25Db29vb2//b/9vb///gwcXkq27k///ntoHntp3n///r6+vw0dX/tmb/yI7/z53/25D/27b/29v/5Kv/57b//7b//8j//8///9v//+T//+f///9Onh0GAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAb90lEQVR4nO2di2Pbxn3HIVmNJolEwXJUYNhZH6vUtAnVZC26bg7TNWmyh5O2ltdXqnZb0jaK121dZ9eJt2htt4qOV1O2UkWKHPyvuxeeBEAcjo8D8P3EEUk8fjjhPrr7HQAChgeAAsaiCwCqDQQCSkAgoAQEAkpAIKAEBAJKQCCgBAQCSlRJoN/8mWEsf/pmzhJ/eGvgHV++cDucEv+UxYGxFvn0/rOG8Rn2Y/KapzsGp8hmxhkvsIi5xUplLO/FlyWzBumRjkqWQJUKCfQWr6noPk1wvmtMQ6B9spUt9mPymmoCpRRYxFw9pDOjvyxbFgKV58hYfo60Qpfpvs2A7eMyJAXaEj8mk12jRUgvMBWI2EBfINDUIPuP1egB6cNOd5a/d/nCTe+/LxvLf0nn0cbp04f0T9a48O/kD5rs5+e+SyexP+/wkxescnw52pIxgaJR/LbOX9wTRrFafJ92pc/xqZEaDTcjmqXl1/hMsibZ3PefNR67eUx+3E4psOf9+rIoIQ20/GWy4pHxRzu0kLwMfNlfkW28JRYksYzHfuDxX+qxf4FA+URrnFXQ6uE+q6Yt3ucYxlpMID7JF0h88oJVUgSKRhECBYt79E989TAabuAXZRAtFduML9Aei0t82Du+zKZ87HK0GJEC03yH/U480PL3yEYPjD+lAokyBAL5v8oRf/ecJ9aFQPlEMwVSQWuH/3tMGyFeo7Q1IjswSCnIAqs3z/fJpLFPN9PSogNW6yJK2IXFFqcesAWZewdBZQvbtrxwM3TGka8vM48ItHb4a5KWHx4YGQXeCqQmW3ptZ/V3u+QnVU+Uwe/CVm96P2cxSMTz8N0uBMonIdAg+BOkb89/8WUjUR8DnhbEP0VWicFzIBElFCi++D5rBlglLn/6B4dBUSICDYJc5PiyyIMHZL0Bd4P94POTBY5JTQT6IbWHtDfLe0EZIjmQ/4vxPcHfIQeaQLwLo+8Pgl37lmjCJwp0kCNQECUUKL44aUl+y+qKJh9+xxbvwgZ+RdKW4pAHJs3N7YRA4wWOVT/99Q4Ml65K36QLJEQkmSF/V2y4OX0qI5CfRB998j8CgcR4jIzP/uJ/aEdRQKCxIdw+z0nWwihRgaKLn++S3JZr8wfSgPjdTZpA5C2vTrL5f6UbEAKxDo1WfrLAyRaINTxbXCBRhpwWiBYFLdAkDsJhPBeI9BLPeb9mWjx2+/w7vD62cgUKVomGvXCTrRdEieZAscXFgT0SaC+Sr6QIROL5zeU+XycuUGqBP3v4/rPcT/rr0X5yT6TfvAxs2XAbiRzofeRAEwkPJHKBgiHVkRF2Psby93MEShmF8fERq9mxLsyLjsL8vMYTw7REEs3qfBBPtfhYiS6YbIGSBRa9ZZius6T4NDIK4y6+Fv4qR0H3ilFYQX7zrDiVIQQ6/7k4SkOPg/ySTiPZyYVf5AkUrBKmVOxwys1olFCgYHGG34uef9eIHLPJF4gNr5ICjRdYHAe6KWKK8R57ExaZLPvLSJ71GxwHagDx4001BALNEto/rk1erMpAoFlCBHpsIR3L/IBAQAkIBJSAQEAJCASUgEBACQgElIBAQAkIBJSovEAffMP9yi3P++iG++fvxqZ+9ffshb7ec93XyYeX343Mdq9Epty7+tGN1+NxxYT4dLrCHRaZfvjbGfw6laPqAn34o9e9e0SdO1fov3DqVe8e+fiQTfrwx7cekkq/E6jwkKzw0Y0rgUAf/sO7Y4FTBeLB/Ld3ErMaSdUFog6QOqXVGm1h+FTvzlXxif77m9+LuVQ6MvWlW/4a966OB84SKLKVh1/9vdd4KiPQBy//m+vyin7oMoIKJhXpGxMszD5+9M9sCm+B4g1QsBiNQRZjcVzesX2DxuYTrooXsfUPXv4vOvPDH7H+MrLB5lIdgb5xNaz5CCT5IQ1BQiDWsZGK/vFfswSJ5kBhAxS2HEIg+kJEoSs9/Mot+kKmkAnkgydexNZ5W0alukdijLVOTaQ6Ar0U66R8WLbDajbWIJBW5O9uvE7XEfkNFUE0WmMC8ZSIzRPpElvhH1+6FbyIrQf/+MbupHR9TaM6ApFa8ys80oWJykwK5AUdjHh5eEUs5Y13YQ9Fa0L7rq/cuucL9NX/vBK8iK2Lf2Q51rJBoGoKlJw8nkT7czxfIJLmkM++UyyJJj/jXRhrryIt0Ot0cfESF8jfEASqvkAf3biaNoynI7ArrKnhuQ8Zz4ctkHePJTc89fYCgejSd0QO9NItkZ1HkvTAHtZavfwuciBK1QXyDySKgZHfJjxkBxBp9sy6K9b0BDmQF4y3xCjsBht0kXScJk6RUdhHN66Il5hAdGNsmxiFVUigYnzwT2XWune1VGuC40Be7QT6v1JtAhmplWlNcCTaq51AJbnnuvKtSeTIUoOBQEAJCASUgEBACQgElIBAQAkIBJSojECXQJRFV0dAdQQqveZ95W3rFwECSQOBokAgaSBQFAgkDQSKAoGkgUBRIJA0ECgKBJIGAkWBQNJAoCgQSBoIFAUCSQOBokAgaSBQhE0IJA0ECtmEQPJAoIBNCFSCpgs0DN4Rf5ADydNwgUaBQNQfFwJJ02yBRoFAzB+0QPI0WqBRIBD1x8MwvgRNFmgUCCT8gUDyNFigUSCQ7w8Ekqe5Ao18gTZ5/kOBQNI0VqCRL1DEHwgkT1MFEv7YH98wSfcl/IFA8jRUIN+frmm2nXAyBCrEyfPbT74j3jdToIg/ptMLDYJARTh79U3v7uff4x8aKdDIF6hN/IFAspy88J539k3RBDVRIN+fkdk2H+/1IJAkYQtEv8x7v3EMfTY3zU/0Lv7xxXAWBCrE2Svbfg/WwBYoaH/I8H3U+7gVyaHRAhXi5Gtveg+ebGoXFvMnPJnKgUBFeECaH9qNMZomUMIfCFSCJrdASX8gUBkebG9/TjRADRMo5o8LgaZAowQa92eEr/Uo0iCBRin+4HthqjRRID//If5AIFWaI1CqPxBIlcYIlO4PBFKlKQJF/XEDfSCQMs0QaDTuDwSaDs0SaDPpDwRSpRECRf0ZxfyBQKo0QaDx9DnwBwKp0gCBuDK2bY41P2MRIJA0tRdIOGP3Ox3TdZP+QCBVGiIQ9afj2GP+QCBV6i6Q3wBRf/r2mD8QSJWaC+QnzWan0+8zgXIjQCBp6i1QOP4y0/2BQKrUWaDY6S/bTvMHAqlSY4EyT19kR4BA0tRXoEL+QCBVaivQuD8FIkAgaeoqUCz/yfYHAqlSU4GK+gOBVKmnQIX9gUCq1FKg4v5AIFVqLdBkfyCQKnUUSMIfCKRKDQWS8QcCqVI/gUJ9CvgDgVSpm0CjpD9SESCQNDUVKPf0RXYECCRNzQRKpj+T/IFAqtRLIGl/IJAqtRJI3h8IpEqNBJIavqeXAQJJUx+BSvkDgVSpjUDl/IFAqtRFoKg/7PLnUmWAQNLUQyDHtiP+9Pt9J3e1zDJAIGkqKZDjOLEIjvjOTuBP3y1qEARSpIoCOa4rBOERqD/MIJb/UIFcCDQvKigQ9UcYwiPYQiCeP9vUHwg0L2og0EgI5I+/bAl/IJAq1ReINzqhP6MwRZIuAwSSpoICxXMg3ujYtuTxn/QyQCBpqiiQ51iWL1Dy+KFaGSCQNNUUKOjCVP2BQKpUUaAwCRrKXX44sQwQSJoqCzQaDVX9gUCq1ECgkulzWhkgkDRVFEjkQCMukJI/EEiVSgrEjvSMuEBq/kCgMjx6owbPTB1xgRT9gUBlePsae/Q3o6ICidH7UNUfCFSCs2++E36otkAKw6/UMkCgIpy88FPRhV0i3K8iQw7xh7+ZVlwIVIST568RiarchZW7/LlAGSBQEag8Z6+KLLqKAoX+DFX9gUAlOPt2pQWKnv4aqvoDgcrwdqW7sGj/NVTUBwKV4uyV7Sf9gVjlBIrlP0NVfyCQKlURyL/KMJ4/D6dcBggkTUUE8q8ASoy/7stcvVqgDBBImmoIJM6/Jy4f87yLMtfPFygDBJKmSgLZyePPztOuqkEQSJEKCdS3E/5AIA2ohkDUoHF/IJAGVESg4PYJ8ctXkQMtnKoIFKY/m5GjzxiFLZyKCJRx+ca0ywCBpKmGQFmX/0CghVMlgUzTTJx9h0ALpxICCX86neSj3yHQwqmCQKE/9C5AsywDBMrg+Ik97+DC7ZQ5FRBI5D9mh90FaKZlgEDpnO8OyM+D1cPxWdoLNGI3byH5s8luIxUftUOg+XD6xT3y8/hPUpqgCghEbx9lpt99FQLNif01+qOKLRD3p9Oh4y977KghBJoT57uGYaT5o7tAVJu+0+l0EsOvGZUBAkmjt0Aj1u50+Ph9DmWAQNLoLBAffrlmpj8QaB6QDPp0x6CkjeM1Fig4f2FmPvsCAi0cfQVKXr46jzJAIGm0FaiIPxBoTlTwOJDIf/L9gUBz4fiywanQcaBi/kCgOcFboFT0FKigPxBo8WgpUOrlq/MoAwTK4KBSw/jC/kCgOXG6MzhaPdzfSpmloUAZl6/OowwQKB16LPGZ2xUZhcXSnwl334BA8+F8d3B+fa8aAsn4A4HmxfETe0eGUYUuTMofCLR4NBNo7PBz/jcHIdDC0Uqg8dMXTv53lyHQnDiqxjA+1Z88gyDQfCDD+KxZOgk0fvgZAulBNU5lpJy+gECacLCWNUcfgVJPfyEH0gP9c6Csy38wCtOBCuRARS4fm3UZIFAW+udA5fyBQPPiSPMciKU/wp9FlYECgdLR/VsZUX8gEEMvgXLQQKBRaX8g0OLRRaBS/kCgOXG6o3EOVPjywxmWwQcCZXFkGMupI7GFCxT1Z1FlCIBAOdA7dAzGpi5aIJr+TP72xWzLEAKBsqDfDRuk3SJosQLRu4/1yqU/UytDFAiUzumOEGf8qtaFCsRu/sPuPlbOHwi0eBYp0DBy97FFlQECleLRG9fEu4ULlHn3sfmUAQIVgQ/jI/3X3W0NBBoNR1a3nX33qHmUAQIV4nSHnsYIBTr5+rcWL9BoNOz122ZbwR8INCdOv7h3YAwCgR795Ge8C7tEuL8ghsNh76lOp/2Jjw+HiyrDGBAoHXo5x/Hlj/kC3X1x4TkQO/31OL17ZuLe83MsQ0oECJQOux7ofFecjT954T0tBBJPv1B5YhwEWgR3tykv8g+LEUicvzAV/YFAi2LBLVBw+t22p/nEU/UIECiD5EX1ixWIXv1D/RmWHn2plyE9AgRKR6uL6ke+PyMIlI1mAul0UX3gz2hYetuqZciKAIEy0OGLheIbXpHLD2d4l8WSESBQOjpcVC++YxrxZ4Z3WSwbAQJJMy+BxLfco/5AoBwgUAImUN/m374Ql69CoGw0E+h811j9bdotEucqUL9v+/6UiKBehskRIFA657tbR6uHi33orhP4E1x+CIGy0UsgMownAi34Lq302cvxy58hUDZ6CcRboMU+dDfl24MQKBu9BNLgobtp3z6FQNloJlA2cxIoPPwcOX0BgbKBQDFS/YFAOUCgKOn+QKAcIFCE2OHnUhHUy1AsAgSSZg4Chf6UjaBehoIRIJA0sxcoq/2BQHlAIJ+Rm5r/SERQL0PhCBBImlkLRNPnrLtnQqBsIBBjlOcPBMoBAjEy8+fCEdTLIBMBAkkzU4Hy/YFAOUAgb6I/ECgHCOR5ds/O9QcC5dB0gRzHtp1+387zBwLl0HCBHNftWuzudTn+QKAcmi2Q1ev1u3a3w25/SCekP/ULAmXTaIGcnmN3u3a73e7aec9ehkDZNFkgx+3Ztt1tr5h21+YT0p98CoGyabRAfadr2+2NdrfLtYFA8jRZIMvq9rvtDbPfdyFQWRoskOPQ/NnctPuBNsiBpGmqQI5j9bvdVnuDDN8j2mAUJktDBaLHf1q2bbbZ8D3/kd0QKI9mCuT0SOvTtUzTtIrcfAwCZdNMgaxez25ZG6bZLXTzZwiUTaME8rsqx7Jt29pYaXf71oTeKxFBvQzTiQCBpJmCQEGyTM9f2OZSp9+30oddWRHUyzClCBBIGnWBwqM8dr/fbbdN27EyDvxkRCgPBFo4UxSIPn+Qnz7NOnKYEaE8EGjhTE8gev8fMv5i43cIpEqDBOI5kEufXmn6l49lHHrOiqBehilFgEDSTGUUZlk9u9/ttv3LfyYfQ0xEUC/DdCJAIGmmIpDr9K2ubZptuWd/QaBsmiSQ0+t1+631jQ3TtspFUC/DlCJAIGmmIJDl2HZ3ZandtnpyD2+CQNk0SCB69Zi1ZGxsWBBoejRHIJL/dK32imFYjiPXg0GgHBojkOuR8dfGhtHqrrckGyAIlENTBHLp8ee2SbsvS7YBgkA5aC3QyfPb28qPvHQu+o//2txot2zHkm6AIFAOOgt09uqb3snX3uQfyu4yx33adTxx9wS76zi9Isee40CgbHQW6MEXyI+3RRNUcpc5LhHItf27bzhWCX8gUA46C0ShrRDZX4T7pbj49NNPO089PhzShy8P6YSLF8tF0goIVJBHb7wo3pVvgejNN1j7U7oUaIGy0Vugs1d8f8rnQM5Tfds2c+++MQkIlI3WAp08fy14X3qX2Y/bdqfTsRWe/Q6BstFZoKg/pXfZaDSk/vT70qlzCATKRmeB7m5T1EZhZPg1NKk/8mOvEAiUjc4CxSizy1x+/Mfs9AtdeJgJBMqmzgL5/pjFvryTDQTKpsYCRdqfQl8fzAYCZVNjgXx/nlJsfyBQHjUWiH59Z3PTpKcyINDMqKdADsHq9jvm5qYNgWZKLQUi+tC7/7Tp108952lVfyBQDnUUyKG3X7Us02z36dd3Lqpl0B4EyqOOAvVct2uzu/+ww8/6Vb96BAgkjUwL5Pa7trli2vzSQ/2qXz0CBJJGZpdZ3W673elavOvSr/rVI0AgaYrvspHN7v5s+5mPftWvHgECSVNwl7ns9lH08o1gkn7Vrx4BAklTbJe5rAEi/kRG7vpVv3oECCRNoV3mstuP0ct/INCcqJdADr3/Kjt9Gjn0o1/1q0eAQNJM3mXs6QX86RexQ4f6Vb96BAgkzcRd5rg9hz29oJO4e5R+1a8eAQJJM2mX9Vy3Za3T8xfJM1/6Vb96BAgkTf4uc3qW21pvtZZMs0cFit76UL/qV48AgaTJ3WX09KnRarVWlja4P9ErOPSrfvUIEEiarF1G2xqiT88wDGtlaWXdcZK3f9av+tUjQCBpMnYZa2ucnrO+Tgxa2ej5Dx7s9XoQaB5UXCDe1qw7xJ6WsbFiWWJqzwnvY6df9atHgEDSZAnUsyzXMtbJfysr6+tisuXQ+wCJJki/6lePAIGkyRCoRwRqGV1jyVgxrPXI5PA+QPpVv3oECCRN6i5zLINhtVeWyM9wejSL1q/61SNAIGnSdpnjcn0MY2OJ5EBOdA5GYfOhygI5bos3QCuG0e21fGXYQcTIkUT9ql89AgSSJk2gHvfHaG8YrZbf5ow9wUm/6lePAIGkSdllLZEBGRv2epD0jD9DTr/qV48AgaQZ32U9vwEybCtsdyDQfKmsQE5v3VoXAtHhe/BIbwg0V6oqED17Kui2nPgc5EBzpKICBQMwY6mVfHhT8imW+lW/egQIJE1CIN8fo7U+6dkp+lW/egQIJE10l/Uc4g0bfhmW1Zr07B39ql89AgSSJrLLeq7Lzr4bxkqrZ1Xwqe/qESCQNOEuI/70qD5LS8Z6NR/arR4BAkkT7jJ6tY9lrG9Ez57moV/1q0eAQNLEBLJty1gyCrQ+FP2qXz0CBJImssscIlC73S764Er9ql89AgSShu8yl/10rHanU/i+dfpVv3oECCQN22Wu+LBpmsXve6hf9atHgEDS0F0W+LO5KbGmftWvHgECSRPusk05fzSsfvUIEEiaYJfJ+qNh9atHgEDS+LtMVh8dq189AgSSRuwyeX80rH71CBBIGr7LSvijYfWrR4BA0rBdVsYfDatfPQIEKsTZK9uff0+8p7uslD8aVr96BAhUhEdvXPPufkF8uFTWHw2rXz0CBCrC2Tff8U7+6h3+4VJZfzSsfvUIEKgIJy+85529+iZ5d4lA/LkPBBCoCA8+7wtEuFSy/dGx/VCPAIGKELZAHhWobBj9ql89AgQqQiIHKot+1a8eAQIV4dEbL0ZGYSDKQismis4CxY4DlUd9Z9cjwmzQWqDpoEPl6RBhNjRAIDBLIBBQAgIBJSAQUAICASXqLtDJ89vb1xRj0KsC1Nbf/tybShHIb/HkO0oRZkbNBaJnQk6+plZ73l1FBd++xk7rlYf+FnencERsFtRcoAf0QPbbavV/8vVvKQWgZ2TUYCcFlaPMhpoLRAnOx5bj0U9+ptaFnbzwU8UuDC3QIqFn1FS4+6JiDnTy/DXWhigwnXM6M6H2Ap29ouYPqXpVgaJXpZSLQLK4B5pm0XUXiP75K3F3m6Ii4dm3VQWKXVmnGTUXSNkfiuow/m3VLgwt0MLg7YeiRKoCkQxGsfYfbKseSZoZNRcIzBoIBJSAQEAJCASUgEBACQgElIBAQAkINJnz3YH/dt9Y/Y6xerjAwugGBJLh9It75N+iS6EVEEiG4z+5Tf4tuhRaAYEmQ7uwI8Mw1o4vs4ckDk53jAvQiAOBJkMEOt0hDi3v8RaICnWARIgDgSYjkmiS/XCBaC+GVEgAgSZDBaK9l98CsZ5sGQIxINBkiEDHT+zFWyAggECTIQIdkaR5P5oDQSIBBJoMEeZ81zA+SxoikQDtoAfzgUCTiRyJBkkg0GQw4soBAk3kACe/coBAQAkIBJSAQEAJCASUgEBACQgElIBAQAkIBJSoukCnO/5hPnqRxYC98KsF0053+tOCtdhZimCVGAdb6SdM9wf+u+xTHInt8JfjT9XxeGTFBWIXB67Rd/R8w/ETe/TSQXa14FGKFP60cK0D4lywSgxS3aUFSmzH39zBlvwvqD2VEYjUW8qf8Okzt8Wf+9EaW4guQ13aX/6+X/10GR7CnxasdfzJZ3lYfrprf0t4JbZHFuHt2vn17xnG1hH5n8xwWUtHWpXHnh347V68qInt+JsLClInKiPQ0Rb957Gr28M6CyufQi/5CiYcjwkUTPMXOr/+w92oQKfP/OqZyEq07mm7Rq8AWiOqrLH191dZ00RkOzIGYn6yXPHtBBsIG6/6UBmBTr90+Nb4SfGj1YhA57tbvD9ajgjEK1Z0Hv40sdbBFu1dwlVIj+b3MrTSj4N25Pw6tW2Pt20DagIVzL9WerxhiW8nKGQd+7DKCHR+/bUvxXuwffpFm0gLdLpD64f0KZ+9XqwFIi9+Es1XoUmUWJJWOluabOVCTKC3WFPC5w3E/GRhM1ogCLRIDly2++NdWJgDEQ2iE3MFEmsdhI2TWGbf9VMg0QLR1ol2YfEWiH7Ph7dAYn6yXMepORAEWihh6xCB9lo87xX+sJ6JT8gexodrsS4sXOVTv7suNiIqneXRT+zFBBKpEMuBxPz87QSbQw60SM7/Pm0MIw6x+M0J+wopH5JnCSQuao4cB/JXYd9A9cfzYhRGwpLBVkwgl10Qfb7LRmF8/oTt+C8YhS2S48/Md3PTP+xXxx6sOgIdzPt7EFOvbhyJBmAMCASUgEBACQgElIBAQAkIBJSAQECJ/wepxJLuNBkKgAAAAABJRU5ErkJggg==" alt="Complete Deming regression analysis for creatinine methods." />
+<p class="caption">
+Complete Deming regression analysis for creatinine methods.
+</p>
+</div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="co"># 4. Check residuals</span></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="fu">plot</span>(dm, <span class="at">type =</span> <span class="st">&quot;residuals&quot;</span>)</span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="data:image/png;base64,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" alt="Residual diagnostics for creatinine comparison." />
+<p class="caption">
+Residual diagnostics for creatinine comparison.
+</p>
+</div>
+</div>
+<div id="extracting-results" class="section level2">
+<h2>Extracting Results</h2>
+<p>For further analysis or reporting, extract components from the result
+object:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="co"># Coefficients</span></span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>slope <span class="ot">&lt;-</span> dm<span class="sc">$</span>results<span class="sc">$</span>slope</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>intercept <span class="ot">&lt;-</span> dm<span class="sc">$</span>results<span class="sc">$</span>intercept</span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a><span class="co"># Confidence intervals</span></span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a>slope_ci <span class="ot">&lt;-</span> dm<span class="sc">$</span>results<span class="sc">$</span>slope_ci</span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a>intercept_ci <span class="ot">&lt;-</span> dm<span class="sc">$</span>results<span class="sc">$</span>intercept_ci</span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a></span>
+<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a><span class="co"># Standard errors</span></span>
+<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a>slope_se <span class="ot">&lt;-</span> dm<span class="sc">$</span>results<span class="sc">$</span>slope_se</span>
+<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a>intercept_se <span class="ot">&lt;-</span> dm<span class="sc">$</span>results<span class="sc">$</span>intercept_se</span>
+<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a></span>
+<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a><span class="co"># Formatted output for reporting</span></span>
+<span id="cb16-14"><a href="#cb16-14" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;Slope: %.4f (95%% CI: %.4f to %.4f)</span><span class="sc">\n</span><span class="st">&quot;</span>, </span>
+<span id="cb16-15"><a href="#cb16-15" tabindex="-1"></a>            slope, slope_ci[<span class="st">&quot;lower&quot;</span>], slope_ci[<span class="st">&quot;upper&quot;</span>]))</span>
+<span id="cb16-16"><a href="#cb16-16" tabindex="-1"></a><span class="co">#&gt; Slope: 1.0488 (95% CI: 1.0175 to 1.0801)</span></span>
+<span id="cb16-17"><a href="#cb16-17" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;Intercept: %.4f (95%% CI: %.4f to %.4f)</span><span class="sc">\n</span><span class="st">&quot;</span>,</span>
+<span id="cb16-18"><a href="#cb16-18" tabindex="-1"></a>            intercept, intercept_ci[<span class="st">&quot;lower&quot;</span>], intercept_ci[<span class="st">&quot;upper&quot;</span>]))</span>
+<span id="cb16-19"><a href="#cb16-19" tabindex="-1"></a><span class="co">#&gt; Intercept: -0.2908 (95% CI: -0.3550 to -0.2265)</span></span></code></pre></div>
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+<p>Cornbleet PJ, Gochman N. Incorrect least-squares regression
+coefficients in method-comparison analysis. Clinical Chemistry.
+1979;25(3):432-438.</p>
+<p>Linnet K. Estimation of the linear relationship between the
+measurements of two methods with proportional errors. Statistics in
+Medicine. 1990;9(12):1463-1473.</p>
+<p>Linnet K. Evaluation of regression procedures for methods comparison
+studies. Clinical Chemistry. 1993;39(3):424-432.</p>
+<p>Deming WE. Statistical Adjustment of Data. Wiley; 1943.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

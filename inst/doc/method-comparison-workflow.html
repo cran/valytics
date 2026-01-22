@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Marcello Grassi" />
+
+
+<title>Method Comparison Workflow</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Method Comparison Workflow</h1>
+<h4 class="author">Marcello Grassi</h4>
+
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>Method comparison studies are fundamental in clinical laboratories
+and biotech research. When introducing a new analytical method, we must
+demonstrate that it produces results comparable to an established
+reference method. This vignette walks through a complete method
+comparison workflow using the <code>valytics</code> package.</p>
+<p>The statistical approaches implemented in <code>valytics</code>
+follow well-established methodology from the clinical chemistry
+literature. We focus on two complementary techniques: Bland-Altman
+analysis for assessing agreement and Passing-Bablok regression for
+evaluating systematic differences.</p>
+</div>
+<div id="getting-started" class="section level2">
+<h2>Getting Started</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(valytics)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span></code></pre></div>
+<p>We will use the <code>glucose_methods</code> dataset included in the
+package. This dataset contains paired measurements from a point-of-care
+(POC) glucose meter and a laboratory reference analyzer on 60 patient
+samples.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;glucose_methods&quot;</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">head</span>(glucose_methods)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co">#&gt;   sample_id reference poc_meter</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">#&gt; 1    GLU026       118       131</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co">#&gt; 2    GLU022       113       110</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co">#&gt; 3    GLU043        83        77</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co">#&gt; 4    GLU005        51        57</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="co">#&gt; 5    GLU016       112       121</span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#&gt; 6    GLU010        77        77</span></span></code></pre></div>
+<p>Before diving into statistical analysis, it is always good practice
+to visualize the raw data:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">ggplot</span>(glucose_methods, <span class="fu">aes</span>(<span class="at">x =</span> reference, <span class="at">y =</span> poc_meter)) <span class="sc">+</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">1</span>, <span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">&quot;dashed&quot;</span>, <span class="at">color =</span> <span class="st">&quot;gray50&quot;</span>) <span class="sc">+</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Reference Method (mg/dL)&quot;</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;POC Meter (mg/dL)&quot;</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;Glucose Method Comparison&quot;</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>  <span class="fu">coord_fixed</span>() <span class="sc">+</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="data:image/png;base64,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" alt="Scatter plot of POC vs laboratory glucose measurements with identity line." />
+<p class="caption">
+Scatter plot of POC vs laboratory glucose measurements with identity
+line.
+</p>
+</div>
+<p>The points cluster around the identity line, suggesting reasonable
+agreement. Now let us quantify this agreement using appropriate
+statistical methods.</p>
+</div>
+<div id="bland-altman-analysis" class="section level2">
+<h2>Bland-Altman Analysis</h2>
+<p>Bland-Altman analysis, introduced by Bland and Altman (1986),
+assesses agreement between two measurement methods by examining the
+differences between paired measurements. Rather than correlation, which
+can be misleading for method comparison, this approach focuses on
+clinically meaningful questions: How large are the differences? Is there
+systematic bias?</p>
+<div id="running-the-analysis" class="section level3">
+<h3>Running the Analysis</h3>
+<p>The <code>ba_analysis()</code> function accepts paired measurements
+as vectors or via a formula interface:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Vector interface</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>ba <span class="ot">&lt;-</span> <span class="fu">ba_analysis</span>(</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="at">x =</span> glucose_methods<span class="sc">$</span>reference,</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="at">y =</span> glucose_methods<span class="sc">$</span>poc_meter</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>)</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co"># Alternative: formula interface</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co"># ba &lt;- ba_analysis(reference ~ poc_meter, data = glucose_methods)</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>ba</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt; Bland-Altman Analysis</span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------- </span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt; n = 60 paired observations</span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt; Difference type: Absolute (y - x)</span></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt; Confidence level: 95%</span></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt; Results:</span></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt;   Bias (mean difference): 5.700</span></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co">#&gt;     95% CI: [3.539, 7.861]</span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt;   SD of differences: 8.365</span></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="co">#&gt; Limits of Agreement:</span></span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="co">#&gt;   Lower LoA: -10.695</span></span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="co">#&gt;     95% CI: [-14.409, -6.982]</span></span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="co">#&gt;   Upper LoA: 22.095</span></span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="co">#&gt;     95% CI: [18.382, 25.809]</span></span></code></pre></div>
+<p>The print output shows the mean difference (bias) and the 95% limits
+of agreement (LoA). These limits represent the range within which 95% of
+differences between the two methods are expected to fall.</p>
+</div>
+<div id="interpreting-results" class="section level3">
+<h3>Interpreting Results</h3>
+<p>The <code>summary()</code> method provides additional statistical
+details:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">summary</span>(ba)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">#&gt; Bland-Altman Analysis - Detailed Summary</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">#&gt; ================================================== </span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">#&gt; Call:</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt; ba_analysis(x = glucose_methods$reference, y = glucose_methods$poc_meter)</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt; Sample size: n = 60</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; Variables: x = &#39;x&#39;, y = &#39;y&#39;</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt; Difference type: Absolute (y - x)</span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt; Confidence level: 95%</span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&gt; Descriptive Statistics:</span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a><span class="co">#&gt;  Variable  N  Mean    SD Median Min Max</span></span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="co">#&gt;         x 60 131.0 73.54    111  48 323</span></span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a><span class="co">#&gt;         y 60 136.7 74.19    118  54 342</span></span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a><span class="co">#&gt; Agreement Statistics:</span></span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a><span class="co">#&gt;  Statistic Estimate CI_Lower_95% CI_Upper_95%</span></span>
+<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a><span class="co">#&gt;       Bias      5.7        3.539        7.861</span></span>
+<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a><span class="co">#&gt;  Lower LoA    -10.7      -14.409       -6.982</span></span>
+<span id="cb5-27"><a href="#cb5-27" tabindex="-1"></a><span class="co">#&gt;  Upper LoA     22.1       18.382       25.809</span></span>
+<span id="cb5-28"><a href="#cb5-28" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-29"><a href="#cb5-29" tabindex="-1"></a><span class="co">#&gt; SD of differences: 8.3652</span></span>
+<span id="cb5-30"><a href="#cb5-30" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-31"><a href="#cb5-31" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb5-32"><a href="#cb5-32" tabindex="-1"></a><span class="co">#&gt; Normality of Differences (Shapiro-Wilk test):</span></span>
+<span id="cb5-33"><a href="#cb5-33" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb5-34"><a href="#cb5-34" tabindex="-1"></a><span class="co">#&gt; W = 0.9567, p-value = 3.25e-02</span></span>
+<span id="cb5-35"><a href="#cb5-35" tabindex="-1"></a><span class="co">#&gt; Note: p &lt; 0.05 suggests differences may not be normally distributed.</span></span>
+<span id="cb5-36"><a href="#cb5-36" tabindex="-1"></a><span class="co">#&gt;       Consider inspecting the Bland-Altman plot for patterns.</span></span></code></pre></div>
+<p>Key outputs to examine:</p>
+<ul>
+<li><strong>Bias</strong>: The mean difference between methods. A bias
+significantly different from zero indicates systematic over- or
+under-estimation by one method.</li>
+<li><strong>Limits of Agreement</strong>: The 95% LoA define the
+expected range of differences. Whether these limits are clinically
+acceptable depends on the intended use of the measurement.</li>
+<li><strong>Normality test</strong>: The Shapiro-Wilk test checks
+whether differences follow a normal distribution, an assumption
+underlying the LoA calculation.</li>
+</ul>
+</div>
+<div id="visualization" class="section level3">
+<h3>Visualization</h3>
+<p>The Bland-Altman plot displays differences against the average of
+paired measurements:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">plot</span>(ba)</span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="data:image/png;base64,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" alt="Bland-Altman plot showing bias and 95% limits of agreement." />
+<p class="caption">
+Bland-Altman plot showing bias and 95% limits of agreement.
+</p>
+</div>
+<p>This plot reveals several important features:</p>
+<ul>
+<li>Points scattered randomly around the bias line suggest no
+relationship between measurement magnitude and agreement.</li>
+<li>The shaded bands represent 95% confidence intervals for the bias and
+LoA.</li>
+<li>Points outside the LoA may warrant individual investigation.</li>
+</ul>
+<p>For publication-quality figures, you can use <code>autoplot()</code>
+with additional ggplot2 customization:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">autoplot</span>(ba) <span class="sc">+</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;POC Meter vs Reference Analyzer Agreement&quot;</span>) <span class="sc">+</span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="data:image/png;base64,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" alt="Customized Bland-Altman plot." />
+<p class="caption">
+Customized Bland-Altman plot.
+</p>
+</div>
+</div>
+<div id="percentage-differences" class="section level3">
+<h3>Percentage Differences</h3>
+<p>When the magnitude of measurements varies widely, percentage
+differences can be more informative than absolute differences:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>ba_pct <span class="ot">&lt;-</span> <span class="fu">ba_analysis</span>(</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  <span class="at">x =</span> glucose_methods<span class="sc">$</span>reference,</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  <span class="at">y =</span> glucose_methods<span class="sc">$</span>poc_meter,</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">&quot;percent&quot;</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>)</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>ba_pct</span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="co">#&gt; Bland-Altman Analysis</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------- </span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="co">#&gt; n = 60 paired observations</span></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a><span class="co">#&gt; Difference type: Percent (y - x)</span></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a><span class="co">#&gt; Confidence level: 95%</span></span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a><span class="co">#&gt; Results:</span></span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a><span class="co">#&gt;   Bias (mean difference): 5.035</span></span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a><span class="co">#&gt;     95% CI: [3.516, 6.555]</span></span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a><span class="co">#&gt;   SD of differences: 5.882</span></span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a><span class="co">#&gt; Limits of Agreement:</span></span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a><span class="co">#&gt;   Lower LoA: -6.494</span></span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a><span class="co">#&gt;     95% CI: [-9.105, -3.882]</span></span>
+<span id="cb8-23"><a href="#cb8-23" tabindex="-1"></a><span class="co">#&gt;   Upper LoA: 16.564</span></span>
+<span id="cb8-24"><a href="#cb8-24" tabindex="-1"></a><span class="co">#&gt;     95% CI: [13.952, 19.175]</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">plot</span>(ba_pct)</span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="data:image/png;base64,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" alt="Bland-Altman plot with percentage differences." />
+<p class="caption">
+Bland-Altman plot with percentage differences.
+</p>
+</div>
+<p>Percentage-based LoA are particularly useful when acceptable
+differences scale with measurement magnitude.</p>
+</div>
+</div>
+<div id="passing-bablok-regression" class="section level2">
+<h2>Passing-Bablok Regression</h2>
+<p>While Bland-Altman analysis assesses overall agreement,
+Passing-Bablok regression (1983) specifically addresses two questions:
+Is there a constant bias (intercept different from 0)? Is there a
+proportional bias (slope different from 1)?</p>
+<p>This non-parametric regression method is robust to outliers and does
+not assume that measurement errors occur in only one method, making it
+well-suited for method comparison studies.</p>
+<div id="running-the-regression" class="section level3">
+<h3>Running the Regression</h3>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>pb <span class="ot">&lt;-</span> <span class="fu">pb_regression</span>(</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>  <span class="at">x =</span> glucose_methods<span class="sc">$</span>reference,</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>  <span class="at">y =</span> glucose_methods<span class="sc">$</span>poc_meter</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>)</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>pb</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a><span class="co">#&gt; Passing-Bablok Regression</span></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------- </span></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a><span class="co">#&gt; n = 60 paired observations</span></span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a><span class="co">#&gt; CI method: Analytical (Passing-Bablok 1983)</span></span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a><span class="co">#&gt; Confidence level: 95%</span></span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a><span class="co">#&gt; Regression equation:</span></span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a><span class="co">#&gt;   glucose_methods$poc_meter = 2.861 + 1.028 * glucose_methods$reference</span></span>
+<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a><span class="co">#&gt; Results:</span></span>
+<span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a><span class="co">#&gt;   Intercept: 2.861</span></span>
+<span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a><span class="co">#&gt;     95% CI: [2.074, 4.605]</span></span>
+<span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a><span class="co">#&gt;     (excludes 0: significant constant bias)</span></span>
+<span id="cb10-21"><a href="#cb10-21" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-22"><a href="#cb10-22" tabindex="-1"></a><span class="co">#&gt;   Slope: 1.028</span></span>
+<span id="cb10-23"><a href="#cb10-23" tabindex="-1"></a><span class="co">#&gt;     95% CI: [1.013, 1.037]</span></span>
+<span id="cb10-24"><a href="#cb10-24" tabindex="-1"></a><span class="co">#&gt;     (excludes 1: significant proportional bias)</span></span></code></pre></div>
+</div>
+<div id="interpreting-results-1" class="section level3">
+<h3>Interpreting Results</h3>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">summary</span>(pb)</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="co">#&gt; Passing-Bablok Regression - Detailed Summary</span></span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="co">#&gt; ================================================== </span></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a><span class="co">#&gt; Data:</span></span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a><span class="co">#&gt;   X variable: glucose_methods$reference</span></span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a><span class="co">#&gt;   Y variable: glucose_methods$poc_meter</span></span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a><span class="co">#&gt;   Sample size: 60</span></span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a><span class="co">#&gt; Settings:</span></span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a><span class="co">#&gt;   Confidence level: 95%</span></span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a><span class="co">#&gt;   CI method: Analytical (Passing-Bablok 1983)</span></span>
+<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a><span class="co">#&gt; Regression Coefficients:</span></span>
+<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a><span class="co">#&gt;           Estimate 95% Lower 95% Upper</span></span>
+<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a><span class="co">#&gt; Intercept   2.8611    2.0741    4.6051</span></span>
+<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a><span class="co">#&gt; Slope       1.0278    1.0127    1.0370</span></span>
+<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a><span class="co">#&gt; Regression equation:</span></span>
+<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a><span class="co">#&gt;   glucose_methods$poc_meter = 2.8611 + 1.0278 * glucose_methods$reference</span></span>
+<span id="cb11-23"><a href="#cb11-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a><span class="co">#&gt; Linearity Test (CUSUM):</span></span>
+<span id="cb11-25"><a href="#cb11-25" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb11-26"><a href="#cb11-26" tabindex="-1"></a><span class="co">#&gt;   Test statistic: 0.9834</span></span>
+<span id="cb11-27"><a href="#cb11-27" tabindex="-1"></a><span class="co">#&gt;   Critical value (alpha = 0.05): 1.36</span></span>
+<span id="cb11-28"><a href="#cb11-28" tabindex="-1"></a><span class="co">#&gt;   p-value: 0.2882</span></span>
+<span id="cb11-29"><a href="#cb11-29" tabindex="-1"></a><span class="co">#&gt;   Result: Linearity assumption is satisfied (p &gt;= 0.05)</span></span>
+<span id="cb11-30"><a href="#cb11-30" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-31"><a href="#cb11-31" tabindex="-1"></a><span class="co">#&gt; Interpretation:</span></span>
+<span id="cb11-32"><a href="#cb11-32" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb11-33"><a href="#cb11-33" tabindex="-1"></a><span class="co">#&gt;   Intercept: CI excludes 0 (2.074 to 4.605)</span></span>
+<span id="cb11-34"><a href="#cb11-34" tabindex="-1"></a><span class="co">#&gt;     -&gt; Significant positive constant bias of 2.861</span></span>
+<span id="cb11-35"><a href="#cb11-35" tabindex="-1"></a><span class="co">#&gt;   Slope: CI excludes 1 (1.013 to 1.037)</span></span>
+<span id="cb11-36"><a href="#cb11-36" tabindex="-1"></a><span class="co">#&gt;     -&gt; Significant proportional bias of 2.8%</span></span>
+<span id="cb11-37"><a href="#cb11-37" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-38"><a href="#cb11-38" tabindex="-1"></a><span class="co">#&gt; Conclusion:</span></span>
+<span id="cb11-39"><a href="#cb11-39" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb11-40"><a href="#cb11-40" tabindex="-1"></a><span class="co">#&gt;   The two methods show SYSTEMATIC DIFFERENCES:</span></span>
+<span id="cb11-41"><a href="#cb11-41" tabindex="-1"></a><span class="co">#&gt;     - Constant bias: 2.861 glucose_methods$poc_meter</span></span>
+<span id="cb11-42"><a href="#cb11-42" tabindex="-1"></a><span class="co">#&gt;     - Proportional bias: 2.8%</span></span>
+<span id="cb11-43"><a href="#cb11-43" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-44"><a href="#cb11-44" tabindex="-1"></a><span class="co">#&gt; Residuals (perpendicular):</span></span>
+<span id="cb11-45"><a href="#cb11-45" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb11-46"><a href="#cb11-46" tabindex="-1"></a><span class="co">#&gt;       Min.    1st Qu.     Median       Mean    3rd Qu.       Max. </span></span>
+<span id="cb11-47"><a href="#cb11-47" tabindex="-1"></a><span class="co">#&gt; -20.804423  -2.702250  -0.009685  -0.558530   2.416529  14.315148</span></span></code></pre></div>
+<p>The summary provides hypothesis tests and confidence intervals for
+the regression parameters:</p>
+<ul>
+<li><strong>Intercept</strong>: If the 95% CI includes 0, there is no
+evidence of constant systematic difference.</li>
+<li><strong>Slope</strong>: If the 95% CI includes 1, there is no
+evidence of proportional systematic difference.</li>
+<li><strong>CUSUM test</strong>: Assesses linearity of the relationship.
+A significant result (p &lt; 0.05) suggests deviation from
+linearity.</li>
+</ul>
+<p>When both the intercept includes 0 and the slope includes 1, we
+conclude that the methods are statistically equivalent.</p>
+</div>
+<div id="visualization-1" class="section level3">
+<h3>Visualization</h3>
+<p>The scatter plot shows the fitted regression line with confidence
+band:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">plot</span>(pb, <span class="at">type =</span> <span class="st">&quot;scatter&quot;</span>)</span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="data:image/png;base64,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" alt="Passing-Bablok regression with 95% confidence band." />
+<p class="caption">
+Passing-Bablok regression with 95% confidence band.
+</p>
+</div>
+<p>The dashed identity line (y = x) serves as a reference. If the
+methods were in perfect agreement, the regression line would coincide
+with the identity line.</p>
+<p>Residual plots help assess model assumptions:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">plot</span>(pb, <span class="at">type =</span> <span class="st">&quot;residuals&quot;</span>)</span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="data:image/png;base64,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" alt="Perpendicular residuals from Passing-Bablok regression." />
+<p class="caption">
+Perpendicular residuals from Passing-Bablok regression.
+</p>
+</div>
+<p>Residuals should scatter randomly around zero without obvious
+patterns. Trends or heteroscedasticity may indicate violations of the
+linearity assumption.</p>
+<p>The CUSUM plot provides a visual assessment of linearity:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">plot</span>(pb, <span class="at">type =</span> <span class="st">&quot;cusum&quot;</span>)</span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="data:image/png;base64,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" alt="CUSUM plot for linearity assessment." />
+<p class="caption">
+CUSUM plot for linearity assessment.
+</p>
+</div>
+<p>Points should remain within the boundary lines if the linear model is
+appropriate. Deviations suggest non-linear relationships that may
+require transformation or alternative modeling approaches.</p>
+</div>
+<div id="bootstrap-confidence-intervals" class="section level3">
+<h3>Bootstrap Confidence Intervals</h3>
+<p>For smaller sample sizes or when parametric assumptions are
+questionable, bootstrap confidence intervals provide a robust
+alternative:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>pb_boot <span class="ot">&lt;-</span> <span class="fu">pb_regression</span>(</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>  <span class="at">x =</span> glucose_methods<span class="sc">$</span>reference,</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>  <span class="at">y =</span> glucose_methods<span class="sc">$</span>poc_meter,</span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>  <span class="at">ci_method =</span> <span class="st">&quot;bootstrap&quot;</span>,</span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>  <span class="at">boot_n =</span> <span class="dv">1999</span></span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>)</span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a><span class="fu">summary</span>(pb_boot)</span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a><span class="co">#&gt; Passing-Bablok Regression - Detailed Summary</span></span>
+<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a><span class="co">#&gt; ================================================== </span></span>
+<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a><span class="co">#&gt; Data:</span></span>
+<span id="cb15-13"><a href="#cb15-13" tabindex="-1"></a><span class="co">#&gt;   X variable: glucose_methods$reference</span></span>
+<span id="cb15-14"><a href="#cb15-14" tabindex="-1"></a><span class="co">#&gt;   Y variable: glucose_methods$poc_meter</span></span>
+<span id="cb15-15"><a href="#cb15-15" tabindex="-1"></a><span class="co">#&gt;   Sample size: 60</span></span>
+<span id="cb15-16"><a href="#cb15-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb15-17"><a href="#cb15-17" tabindex="-1"></a><span class="co">#&gt; Settings:</span></span>
+<span id="cb15-18"><a href="#cb15-18" tabindex="-1"></a><span class="co">#&gt;   Confidence level: 95%</span></span>
+<span id="cb15-19"><a href="#cb15-19" tabindex="-1"></a><span class="co">#&gt;   CI method: Bootstrap BCa (n = 1999)</span></span>
+<span id="cb15-20"><a href="#cb15-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb15-21"><a href="#cb15-21" tabindex="-1"></a><span class="co">#&gt; Regression Coefficients:</span></span>
+<span id="cb15-22"><a href="#cb15-22" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb15-23"><a href="#cb15-23" tabindex="-1"></a><span class="co">#&gt;           Estimate 95% Lower 95% Upper</span></span>
+<span id="cb15-24"><a href="#cb15-24" tabindex="-1"></a><span class="co">#&gt; Intercept   2.8611   -2.9388    6.0000</span></span>
+<span id="cb15-25"><a href="#cb15-25" tabindex="-1"></a><span class="co">#&gt; Slope       1.0278    0.9867    1.0577</span></span>
+<span id="cb15-26"><a href="#cb15-26" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb15-27"><a href="#cb15-27" tabindex="-1"></a><span class="co">#&gt; Regression equation:</span></span>
+<span id="cb15-28"><a href="#cb15-28" tabindex="-1"></a><span class="co">#&gt;   glucose_methods$poc_meter = 2.8611 + 1.0278 * glucose_methods$reference</span></span>
+<span id="cb15-29"><a href="#cb15-29" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb15-30"><a href="#cb15-30" tabindex="-1"></a><span class="co">#&gt; Linearity Test (CUSUM):</span></span>
+<span id="cb15-31"><a href="#cb15-31" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb15-32"><a href="#cb15-32" tabindex="-1"></a><span class="co">#&gt;   Test statistic: 0.9834</span></span>
+<span id="cb15-33"><a href="#cb15-33" tabindex="-1"></a><span class="co">#&gt;   Critical value (alpha = 0.05): 1.36</span></span>
+<span id="cb15-34"><a href="#cb15-34" tabindex="-1"></a><span class="co">#&gt;   p-value: 0.2882</span></span>
+<span id="cb15-35"><a href="#cb15-35" tabindex="-1"></a><span class="co">#&gt;   Result: Linearity assumption is satisfied (p &gt;= 0.05)</span></span>
+<span id="cb15-36"><a href="#cb15-36" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb15-37"><a href="#cb15-37" tabindex="-1"></a><span class="co">#&gt; Interpretation:</span></span>
+<span id="cb15-38"><a href="#cb15-38" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb15-39"><a href="#cb15-39" tabindex="-1"></a><span class="co">#&gt;   Intercept: CI includes 0</span></span>
+<span id="cb15-40"><a href="#cb15-40" tabindex="-1"></a><span class="co">#&gt;     -&gt; No significant constant (additive) bias</span></span>
+<span id="cb15-41"><a href="#cb15-41" tabindex="-1"></a><span class="co">#&gt;   Slope: CI includes 1</span></span>
+<span id="cb15-42"><a href="#cb15-42" tabindex="-1"></a><span class="co">#&gt;     -&gt; No significant proportional (multiplicative) bias</span></span>
+<span id="cb15-43"><a href="#cb15-43" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb15-44"><a href="#cb15-44" tabindex="-1"></a><span class="co">#&gt; Conclusion:</span></span>
+<span id="cb15-45"><a href="#cb15-45" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb15-46"><a href="#cb15-46" tabindex="-1"></a><span class="co">#&gt;   The two methods are EQUIVALENT within the measured range.</span></span>
+<span id="cb15-47"><a href="#cb15-47" tabindex="-1"></a><span class="co">#&gt;   No systematic differences detected.</span></span>
+<span id="cb15-48"><a href="#cb15-48" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb15-49"><a href="#cb15-49" tabindex="-1"></a><span class="co">#&gt; Residuals (perpendicular):</span></span>
+<span id="cb15-50"><a href="#cb15-50" tabindex="-1"></a><span class="co">#&gt; -------------------------------------------------- </span></span>
+<span id="cb15-51"><a href="#cb15-51" tabindex="-1"></a><span class="co">#&gt;       Min.    1st Qu.     Median       Mean    3rd Qu.       Max. </span></span>
+<span id="cb15-52"><a href="#cb15-52" tabindex="-1"></a><span class="co">#&gt; -20.804423  -2.702250  -0.009685  -0.558530   2.416529  14.315148</span></span></code></pre></div>
+<p>The BCa (bias-corrected and accelerated) bootstrap method adjusts for
+potential bias and skewness in the bootstrap distribution.</p>
+</div>
+</div>
+<div id="putting-it-all-together" class="section level2">
+<h2>Putting It All Together</h2>
+<p>A complete method comparison report typically includes both analyses.
+Here is a summary workflow:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="co"># 1. Load and inspect data</span></span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;glucose_methods&quot;</span>)</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a><span class="co"># 2. Bland-Altman analysis for agreement assessment</span></span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a>ba <span class="ot">&lt;-</span> <span class="fu">ba_analysis</span>(reference <span class="sc">~</span> poc_meter, <span class="at">data =</span> glucose_methods)</span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a><span class="fu">summary</span>(ba)</span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a><span class="fu">plot</span>(ba)</span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a></span>
+<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a><span class="co"># 3. Passing-Bablok regression for systematic differences</span></span>
+<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a>pb <span class="ot">&lt;-</span> <span class="fu">pb_regression</span>(reference <span class="sc">~</span> poc_meter, <span class="at">data =</span> glucose_methods)</span>
+<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a><span class="fu">summary</span>(pb)</span>
+<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a><span class="fu">plot</span>(pb, <span class="at">type =</span> <span class="st">&quot;scatter&quot;</span>)</span>
+<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a><span class="fu">plot</span>(pb, <span class="at">type =</span> <span class="st">&quot;cusum&quot;</span>)</span>
+<span id="cb16-14"><a href="#cb16-14" tabindex="-1"></a></span>
+<span id="cb16-15"><a href="#cb16-15" tabindex="-1"></a><span class="co"># 4. Document conclusions</span></span>
+<span id="cb16-16"><a href="#cb16-16" tabindex="-1"></a><span class="co"># - Bias and LoA from Bland-Altman</span></span>
+<span id="cb16-17"><a href="#cb16-17" tabindex="-1"></a><span class="co"># - Slope and intercept CIs from Passing-Bablok</span></span>
+<span id="cb16-18"><a href="#cb16-18" tabindex="-1"></a><span class="co"># - Clinical interpretation based on acceptable performance criteria</span></span></code></pre></div>
+</div>
+<div id="handling-missing-data" class="section level2">
+<h2>Handling Missing Data</h2>
+<p>Both <code>ba_analysis()</code> and <code>pb_regression()</code>
+handle missing values through the <code>na_action</code> parameter:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="co"># Create data with missing values for demonstration</span></span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>glucose_missing <span class="ot">&lt;-</span> glucose_methods</span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a>glucose_missing<span class="sc">$</span>poc_meter[<span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">15</span>, <span class="dv">25</span>)] <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a><span class="co"># Default behavior: remove pairs with missing values</span></span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a>ba_complete <span class="ot">&lt;-</span> <span class="fu">ba_analysis</span>(</span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a>  reference <span class="sc">~</span> poc_meter,</span>
+<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a>  <span class="at">data =</span> glucose_missing,</span>
+<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a>  <span class="at">na_action =</span> <span class="st">&quot;omit&quot;</span></span>
+<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a>)</span>
+<span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a></span>
+<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a><span class="co"># Require complete cases (will error if any NA present)</span></span>
+<span id="cb17-13"><a href="#cb17-13" tabindex="-1"></a><span class="co"># ba_strict &lt;- ba_analysis(</span></span>
+<span id="cb17-14"><a href="#cb17-14" tabindex="-1"></a><span class="co">#   reference ~ poc_meter,</span></span>
+<span id="cb17-15"><a href="#cb17-15" tabindex="-1"></a><span class="co">#   data = glucose_missing,</span></span>
+<span id="cb17-16"><a href="#cb17-16" tabindex="-1"></a><span class="co">#   na_action = &quot;fail&quot;</span></span>
+<span id="cb17-17"><a href="#cb17-17" tabindex="-1"></a><span class="co"># )</span></span></code></pre></div>
+</div>
+<div id="additional-datasets" class="section level2">
+<h2>Additional Datasets</h2>
+<p>The package includes two additional datasets for exploring different
+scenarios:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="co"># Creatinine: enzymatic vs Jaffe methods</span></span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;creatinine_serum&quot;</span>)</span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a><span class="fu">head</span>(creatinine_serum)</span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a><span class="co">#&gt;   sample_id enzymatic jaffe</span></span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a><span class="co">#&gt; 1  CREAT056      2.10  2.46</span></span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a><span class="co">#&gt; 2  CREAT022      1.20  1.47</span></span>
+<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a><span class="co">#&gt; 3  CREAT050      2.50  2.34</span></span>
+<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a><span class="co">#&gt; 4  CREAT024      0.83  1.07</span></span>
+<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a><span class="co">#&gt; 5  CREAT063      1.56  1.65</span></span>
+<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a><span class="co">#&gt; 6  CREAT039      0.58  0.77</span></span>
+<span id="cb18-11"><a href="#cb18-11" tabindex="-1"></a></span>
+<span id="cb18-12"><a href="#cb18-12" tabindex="-1"></a><span class="co"># High-sensitivity troponin: two immunoassay platforms</span></span>
+<span id="cb18-13"><a href="#cb18-13" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;troponin_cardiac&quot;</span>)</span>
+<span id="cb18-14"><a href="#cb18-14" tabindex="-1"></a><span class="fu">head</span>(troponin_cardiac)</span>
+<span id="cb18-15"><a href="#cb18-15" tabindex="-1"></a><span class="co">#&gt;   sample_id platform_a platform_b</span></span>
+<span id="cb18-16"><a href="#cb18-16" tabindex="-1"></a><span class="co">#&gt; 1   TROP020      111.0       92.0</span></span>
+<span id="cb18-17"><a href="#cb18-17" tabindex="-1"></a><span class="co">#&gt; 2   TROP023       42.9       33.4</span></span>
+<span id="cb18-18"><a href="#cb18-18" tabindex="-1"></a><span class="co">#&gt; 3   TROP008        3.8        3.7</span></span>
+<span id="cb18-19"><a href="#cb18-19" tabindex="-1"></a><span class="co">#&gt; 4   TROP002       33.7       31.9</span></span>
+<span id="cb18-20"><a href="#cb18-20" tabindex="-1"></a><span class="co">#&gt; 5   TROP011      910.0      750.0</span></span>
+<span id="cb18-21"><a href="#cb18-21" tabindex="-1"></a><span class="co">#&gt; 6   TROP031       52.0       45.8</span></span></code></pre></div>
+<p>These datasets represent different analytical challenges: the
+creatinine data includes known interferences affecting the Jaffe method
+at low concentrations, while the troponin data covers a wide dynamic
+range typical of cardiac biomarkers.</p>
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+<p>Bland JM, Altman DG. Statistical methods for assessing agreement
+between two methods of clinical measurement. Lancet.
+1986;1(8476):307-310.</p>
+<p>Bland JM, Altman DG. Measuring agreement in method comparison
+studies. Statistical Methods in Medical Research. 1999;8(2):135-160.</p>
+<p>Passing H, Bablok W. A new biometrical procedure for testing the
+equality of measurements from two different analytical methods. Journal
+of Clinical Chemistry and Clinical Biochemistry.
+1983;21(11):709-720.</p>
+<p>Passing H, Bablok W. Comparison of several regression procedures for
+method comparison studies and determination of sample sizes. Journal of
+Clinical Chemistry and Clinical Biochemistry. 1984;22(6):431-445.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
