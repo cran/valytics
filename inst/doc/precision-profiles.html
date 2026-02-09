@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Marcello Grassi" />
+
+
+<title>Precision Profiles and Functional Sensitivity</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Precision Profiles and Functional
+Sensitivity</h1>
+<h4 class="author">Marcello Grassi</h4>
+
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>Analytical precision varies across the measurement range of most
+laboratory assays. Near the limit of detection, imprecision (expressed
+as coefficient of variation, CV) is typically higher, while at elevated
+concentrations, CV approaches an asymptotic minimum. Understanding this
+relationship is essential for:</p>
+<ul>
+<li>Determining <strong>functional sensitivity</strong>: the lowest
+concentration at which acceptable precision is achieved</li>
+<li>Evaluating assay performance across clinical decision points</li>
+<li>Comparing measurement procedures from different manufacturers</li>
+</ul>
+<p>This vignette demonstrates how to construct precision profiles and
+estimate functional sensitivity using <code>valytics</code>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(valytics)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span></code></pre></div>
+</div>
+<div id="the-precision-profile-concept" class="section level2">
+<h2>The Precision Profile Concept</h2>
+<p>A precision profile plots CV (or SD) against analyte concentration.
+For many immunoassays and clinical chemistry methods, this relationship
+follows a characteristic hyperbolic pattern:</p>
+<p><span class="math display">\[CV = \sqrt{a^2 +
+\left(\frac{b}{x}\right)^2}\]</span></p>
+<p>where: - <span class="math inline">\(a\)</span> is the asymptotic CV
+at high concentrations (the “floor” of precision) - <span class="math inline">\(b\)</span> is the concentration-dependent
+component - <span class="math inline">\(x\)</span> is the analyte
+concentration</p>
+<p>At low concentrations, the <span class="math inline">\((b/x)^2\)</span> term dominates, causing CV to
+increase sharply. At high concentrations, CV approaches <span class="math inline">\(a\)</span>.</p>
+</div>
+<div id="example-high-sensitivity-troponin-assay" class="section level2">
+<h2>Example: High-Sensitivity Troponin Assay</h2>
+<p>We will use the <code>troponin_precision</code> dataset, which
+contains multi-level precision data for a simulated high-sensitivity
+cardiac troponin I assay.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;troponin_precision&quot;</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">head</span>(troponin_precision)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co">#&gt;   level level_label concentration day run replicate value</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">#&gt; 1    L1 L1 (5 ng/L)             5   1   1         1  4.36</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co">#&gt; 2    L1 L1 (5 ng/L)             5   1   1         2  4.69</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co">#&gt; 3    L1 L1 (5 ng/L)             5   1   2         1  4.99</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co">#&gt; 4    L1 L1 (5 ng/L)             5   1   2         2  5.21</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="co">#&gt; 5    L1 L1 (5 ng/L)             5   2   1         1  4.91</span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#&gt; 6    L1 L1 (5 ng/L)             5   2   1         2  5.17</span></span></code></pre></div>
+<p>The dataset includes measurements at six concentration levels from 5
+to 500 ng/L, with a nested design of 5 days × 2 runs × 2 replicates per
+level.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># Summarize the experimental design</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">table</span>(troponin_precision<span class="sc">$</span>level, troponin_precision<span class="sc">$</span>day)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt;     </span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt;      1 2 3 4 5</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt;   L1 4 4 4 4 4</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt;   L2 4 4 4 4 4</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt;   L3 4 4 4 4 4</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt;   L4 4 4 4 4 4</span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt;   L5 4 4 4 4 4</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt;   L6 4 4 4 4 4</span></span></code></pre></div>
+</div>
+<div id="step-1-precision-study-analysis" class="section level2">
+<h2>Step 1: Precision Study Analysis</h2>
+<p>First, we analyze precision at each concentration level using
+<code>precision_study()</code>. The <code>sample</code> argument
+indicates that each level should be analyzed separately.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>prec <span class="ot">&lt;-</span> <span class="fu">precision_study</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a> <span class="at">data =</span> troponin_precision,</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a> <span class="at">value =</span> <span class="st">&quot;value&quot;</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a> <span class="at">sample =</span> <span class="st">&quot;level&quot;</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a> <span class="at">day =</span> <span class="st">&quot;day&quot;</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a> <span class="at">run =</span> <span class="st">&quot;run&quot;</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>)</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="fu">print</span>(prec)</span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; Precision Study Analysis</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt; --------------------------------------------- </span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt; n = 120 observations</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt; Design: day/run/replicate (inferred)</span></span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt; Estimation: ANOVA (Method of Moments)</span></span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a><span class="co">#&gt; CI method: Satterthwaite, 95% CI</span></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a><span class="co">#&gt; Samples: 6 concentration levels</span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a><span class="co">#&gt; (Showing results for first sample; use $by_sample for all)</span></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a><span class="co">#&gt; Precision Estimates:</span></span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a><span class="co">#&gt; --------------------------------------------- </span></span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a><span class="co">#&gt;   Repeatability:       SD = 0.265  (CV = 5.33%)</span></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a><span class="co">#&gt;                        95% CI: [0.185, 0.464]</span></span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a><span class="co">#&gt;   Between-run:         SD = 0.235  (CV = 4.74%)</span></span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a><span class="co">#&gt;                        95% CI: [0.147, 0.577]</span></span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="co">#&gt;   Between-day:         SD = 0.000  (CV = 0.00%)</span></span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a><span class="co">#&gt;                        95% CI: [0.000, 0.000]</span></span>
+<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a><span class="co">#&gt;   Within-laboratory precision: SD = 0.354  (CV = 7.14%)</span></span>
+<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a><span class="co">#&gt;                        95% CI: [0.260, 0.556]</span></span></code></pre></div>
+<p>The results show variance components and precision estimates. For
+precision profiles, we are primarily interested in within-laboratory
+precision (or repeatability) at each concentration level.</p>
+<p>We can examine results for individual levels:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Access results for each concentration level</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="fu">names</span>(prec<span class="sc">$</span>by_sample)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">#&gt; [1] &quot;L1&quot; &quot;L2&quot; &quot;L3&quot; &quot;L4&quot; &quot;L5&quot; &quot;L6&quot;</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co"># Example: Level 1 (5 ng/L)</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>prec<span class="sc">$</span>by_sample<span class="sc">$</span>L1<span class="sc">$</span>precision</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt;                       measure        sd   cv_pct  ci_lower  ci_upper</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt; 1               Repeatability 0.2646507 5.334624 0.1849160 0.4644444</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt; 2                 Between-run 0.2353083 4.743163 0.1468813 0.5771204</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; 3                 Between-day 0.0000000 0.000000 0.0000000 0.0000000</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt; 4 Within-laboratory precision 0.3541327 7.138334 0.2598699 0.5557666</span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt;   cv_ci_lower cv_ci_upper</span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co">#&gt; 1    3.727393    9.361911</span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="co">#&gt; 2    2.960720   11.633148</span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&gt; 3    0.000000    0.000000</span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="co">#&gt; 4    5.238257   11.202713</span></span></code></pre></div>
+</div>
+<div id="step-2-generate-precision-profile" class="section level2">
+<h2>Step 2: Generate Precision Profile</h2>
+<p>Now we generate the precision profile by modeling CV as a function of
+concentration:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>profile <span class="ot">&lt;-</span> <span class="fu">precision_profile</span>(</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a> prec,</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a> <span class="at">model =</span> <span class="st">&quot;hyperbolic&quot;</span>,</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a> <span class="at">cv_targets =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">20</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>)</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="fu">print</span>(profile)</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="co">#&gt; Precision Profile Analysis</span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------- </span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co">#&gt; n = 6 concentration levels</span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="co">#&gt; Concentration range: 4.96 to 501 (100.89-fold)</span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co">#&gt; Model: Hyperbolic</span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="co">#&gt;   CV = sqrt(3.037^2 + (32.169/x)^2)</span></span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co">#&gt; Parameters:</span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="co">#&gt;   a = 3.037</span></span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="co">#&gt;   b = 32.169</span></span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="co">#&gt; Fit Quality:</span></span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a><span class="co">#&gt;   R-squared = 0.955</span></span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a><span class="co">#&gt;   RMSE = 0.322</span></span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a><span class="co">#&gt; Functional Sensitivity:</span></span>
+<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a><span class="co">#&gt;   CV = 10%: concentration = 3.376</span></span>
+<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a><span class="co">#&gt;   CV = 20%: concentration = 1.627</span></span></code></pre></div>
+<p>The output shows: - <strong>Model parameters</strong>: The fitted
+values of <span class="math inline">\(a\)</span> (asymptotic CV) and
+<span class="math inline">\(b\)</span> - <strong>Fit quality</strong>:
+R² and RMSE indicating how well the model fits the data -
+<strong>Functional sensitivity</strong>: The concentration at which
+target CVs are achieved</p>
+</div>
+<div id="understanding-the-model-parameters" class="section level2">
+<h2>Understanding the Model Parameters</h2>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># Extract model parameters</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>a <span class="ot">&lt;-</span> profile<span class="sc">$</span>model<span class="sc">$</span>parameters[<span class="st">&quot;a&quot;</span>]</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>b <span class="ot">&lt;-</span> profile<span class="sc">$</span>model<span class="sc">$</span>parameters[<span class="st">&quot;b&quot;</span>]</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;Asymptotic CV (a): %.2f%%</span><span class="sc">\n</span><span class="st">&quot;</span>, a))</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">#&gt; Asymptotic CV (a): 3.04%</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;Concentration component (b): %.2f</span><span class="sc">\n</span><span class="st">&quot;</span>, b))</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="co">#&gt; Concentration component (b): 32.17</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">Model equation: %s</span><span class="sc">\n</span><span class="st">&quot;</span>, profile<span class="sc">$</span>model<span class="sc">$</span>equation))</span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt; Model equation: CV = sqrt(3.037^2 + (32.169/x)^2)</span></span></code></pre></div>
+<p>The asymptotic CV tells us the best precision achievable at high
+concentrations. In this case, ~3% CV represents the analytical “floor”
+of the assay.</p>
+</div>
+<div id="visualizing-the-precision-profile" class="section level2">
+<h2>Visualizing the Precision Profile</h2>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">plot</span>(profile)</span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="data:image/png;base64,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" alt="Precision profile showing CV versus concentration with fitted hyperbolic model." />
+<p class="caption">
+Precision profile showing CV versus concentration with fitted hyperbolic
+model.
+</p>
+</div>
+<p>The plot displays: - <strong>Points</strong>: Observed CV values at
+each concentration level - <strong>Blue curve</strong>: Fitted
+hyperbolic model - <strong>Dashed lines</strong>: Target CV thresholds
+(10% and 20%) - <strong>Dotted lines</strong>: Concentrations at which
+targets are achieved (functional sensitivity)</p>
+<p>For a logarithmic concentration scale (often more informative across
+wide ranges):</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">plot</span>(profile, <span class="at">log_x =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="data:image/png;base64,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" alt="Precision profile with logarithmic concentration scale." />
+<p class="caption">
+Precision profile with logarithmic concentration scale.
+</p>
+</div>
+</div>
+<div id="functional-sensitivity" class="section level2">
+<h2>Functional Sensitivity</h2>
+<p>Functional sensitivity is the lowest concentration at which a
+measurement procedure achieves a specified level of precision. Common
+thresholds include:</p>
+<ul>
+<li><strong>10% CV</strong>: Modern standard for high-sensitivity
+assays</li>
+<li><strong>20% CV</strong>: Traditional standard (originally for TSH
+assays)</li>
+</ul>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>profile<span class="sc">$</span>functional_sensitivity</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="co">#&gt;   cv_target concentration ci_lower ci_upper achievable</span></span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="co">#&gt; 1        10      3.376304       NA       NA       TRUE</span></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="co">#&gt; 2        20      1.627302       NA       NA       TRUE</span></span></code></pre></div>
+<p>In this example: - At 10% CV, the functional sensitivity is
+approximately 3.4 ng/L - At 20% CV, the functional sensitivity is
+approximately 1.6 ng/L</p>
+<div id="unachievable-targets" class="section level3">
+<h3>Unachievable Targets</h3>
+<p>If a target CV is below the asymptotic minimum (<span class="math inline">\(a\)</span>), it cannot be achieved at any
+concentration:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="co"># Try a target CV of 2% (below asymptotic ~3%)</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>profile_strict <span class="ot">&lt;-</span> <span class="fu">precision_profile</span>(</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a> prec,</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a> <span class="at">cv_targets =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">5</span>, <span class="dv">10</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>)</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>profile_strict<span class="sc">$</span>functional_sensitivity</span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a><span class="co">#&gt;   cv_target concentration ci_lower ci_upper achievable</span></span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a><span class="co">#&gt; 1         2            NA       NA       NA      FALSE</span></span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a><span class="co">#&gt; 2         5      8.098367       NA       NA       TRUE</span></span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a><span class="co">#&gt; 3        10      3.376304       NA       NA       TRUE</span></span></code></pre></div>
+<p>The 2% CV target is marked as “not achievable” because it is below
+the assay’s asymptotic CV floor.</p>
+</div>
+</div>
+<div id="bootstrap-confidence-intervals" class="section level2">
+<h2>Bootstrap Confidence Intervals</h2>
+<p>For uncertainty quantification on functional sensitivity estimates,
+use bootstrap resampling:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="co"># Note: This takes longer to run</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>profile_boot <span class="ot">&lt;-</span> <span class="fu">precision_profile</span>(</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a> prec,</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a> <span class="at">cv_targets =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">20</span>),</span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a> <span class="at">bootstrap =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a> <span class="at">boot_n =</span> <span class="dv">999</span></span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>)</span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a>profile_boot<span class="sc">$</span>functional_sensitivity</span></code></pre></div>
+<p>The confidence intervals help assess the precision of the functional
+sensitivity estimates.</p>
+</div>
+<div id="alternative-linear-model" class="section level2">
+<h2>Alternative: Linear Model</h2>
+<p>For some assays, a simpler linear model may be adequate:</p>
+<p><span class="math display">\[CV = a + \frac{b}{x}\]</span></p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>profile_linear <span class="ot">&lt;-</span> <span class="fu">precision_profile</span>(</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a> prec,</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a> <span class="at">model =</span> <span class="st">&quot;linear&quot;</span>,</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a> <span class="at">cv_targets =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">20</span>)</span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>)</span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="fu">print</span>(profile_linear)</span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a><span class="co">#&gt; Precision Profile Analysis</span></span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------- </span></span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a><span class="co">#&gt; n = 6 concentration levels</span></span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a><span class="co">#&gt; Concentration range: 4.96 to 501 (100.89-fold)</span></span>
+<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a><span class="co">#&gt; Model: Linear</span></span>
+<span id="cb13-15"><a href="#cb13-15" tabindex="-1"></a><span class="co">#&gt;   CV = 2.695 + 21.173/x</span></span>
+<span id="cb13-16"><a href="#cb13-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb13-17"><a href="#cb13-17" tabindex="-1"></a><span class="co">#&gt; Parameters:</span></span>
+<span id="cb13-18"><a href="#cb13-18" tabindex="-1"></a><span class="co">#&gt;   a = 2.695</span></span>
+<span id="cb13-19"><a href="#cb13-19" tabindex="-1"></a><span class="co">#&gt;   b = 21.173</span></span>
+<span id="cb13-20"><a href="#cb13-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb13-21"><a href="#cb13-21" tabindex="-1"></a><span class="co">#&gt; Fit Quality:</span></span>
+<span id="cb13-22"><a href="#cb13-22" tabindex="-1"></a><span class="co">#&gt;   R-squared = 0.953</span></span>
+<span id="cb13-23"><a href="#cb13-23" tabindex="-1"></a><span class="co">#&gt;   RMSE = 0.330</span></span>
+<span id="cb13-24"><a href="#cb13-24" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb13-25"><a href="#cb13-25" tabindex="-1"></a><span class="co">#&gt; Functional Sensitivity:</span></span>
+<span id="cb13-26"><a href="#cb13-26" tabindex="-1"></a><span class="co">#&gt;   CV = 10%: concentration = 2.899</span></span>
+<span id="cb13-27"><a href="#cb13-27" tabindex="-1"></a><span class="co">#&gt;   CV = 20%: concentration = 1.224</span></span></code></pre></div>
+<p>Compare model fits:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Hyperbolic model R²:&quot;</span>, <span class="fu">round</span>(profile<span class="sc">$</span>fit_quality<span class="sc">$</span>r_squared, <span class="dv">4</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="co">#&gt; Hyperbolic model R²: 0.9551</span></span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Linear model R²:&quot;</span>, <span class="fu">round</span>(profile_linear<span class="sc">$</span>fit_quality<span class="sc">$</span>r_squared, <span class="dv">4</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="co">#&gt; Linear model R²: 0.9528</span></span></code></pre></div>
+<p>The hyperbolic model typically provides better fit because it
+correctly captures the asymptotic behavior at high concentrations.</p>
+</div>
+<div id="detailed-summary" class="section level2">
+<h2>Detailed Summary</h2>
+<p>The <code>summary()</code> function provides comprehensive
+output:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">summary</span>(profile)</span></code></pre></div>
+<p>This includes: - Fitted values at each concentration level - Residual
+analysis - Complete interpretation of functional sensitivity results</p>
+</div>
+<div id="working-with-data-frames-directly" class="section level2">
+<h2>Working with Data Frames Directly</h2>
+<p>If you have pre-calculated CV values (e.g., from external sources),
+you can create a precision profile directly from a data frame:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="co"># Create a data frame with concentration and CV values</span></span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>cv_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a> <span class="at">concentration =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">10</span>, <span class="dv">25</span>, <span class="dv">50</span>, <span class="dv">100</span>, <span class="dv">500</span>),</span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a> <span class="at">cv_pct =</span> <span class="fu">c</span>(<span class="fl">5.8</span>, <span class="fl">4.2</span>, <span class="fl">3.5</span>, <span class="fl">3.2</span>, <span class="fl">3.1</span>, <span class="fl">3.0</span>)</span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a>)</span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a>profile_df <span class="ot">&lt;-</span> <span class="fu">precision_profile</span>(</span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a> cv_data,</span>
+<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a> <span class="at">concentration =</span> <span class="st">&quot;concentration&quot;</span>,</span>
+<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a> <span class="at">cv =</span> <span class="st">&quot;cv_pct&quot;</span></span>
+<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a>)</span>
+<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a></span>
+<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a><span class="fu">print</span>(profile_df)</span>
+<span id="cb16-14"><a href="#cb16-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb16-15"><a href="#cb16-15" tabindex="-1"></a><span class="co">#&gt; Precision Profile Analysis</span></span>
+<span id="cb16-16"><a href="#cb16-16" tabindex="-1"></a><span class="co">#&gt; ---------------------------------------- </span></span>
+<span id="cb16-17"><a href="#cb16-17" tabindex="-1"></a><span class="co">#&gt; n = 6 concentration levels</span></span>
+<span id="cb16-18"><a href="#cb16-18" tabindex="-1"></a><span class="co">#&gt; Concentration range: 5 to 500 (100.00-fold)</span></span>
+<span id="cb16-19"><a href="#cb16-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb16-20"><a href="#cb16-20" tabindex="-1"></a><span class="co">#&gt; Model: Hyperbolic</span></span>
+<span id="cb16-21"><a href="#cb16-21" tabindex="-1"></a><span class="co">#&gt;   CV = sqrt(3.173^2 + (24.732/x)^2)</span></span>
+<span id="cb16-22"><a href="#cb16-22" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb16-23"><a href="#cb16-23" tabindex="-1"></a><span class="co">#&gt; Parameters:</span></span>
+<span id="cb16-24"><a href="#cb16-24" tabindex="-1"></a><span class="co">#&gt;   a = 3.173</span></span>
+<span id="cb16-25"><a href="#cb16-25" tabindex="-1"></a><span class="co">#&gt;   b = 24.732</span></span>
+<span id="cb16-26"><a href="#cb16-26" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb16-27"><a href="#cb16-27" tabindex="-1"></a><span class="co">#&gt; Fit Quality:</span></span>
+<span id="cb16-28"><a href="#cb16-28" tabindex="-1"></a><span class="co">#&gt;   R-squared = 0.982</span></span>
+<span id="cb16-29"><a href="#cb16-29" tabindex="-1"></a><span class="co">#&gt;   RMSE = 0.132</span></span>
+<span id="cb16-30"><a href="#cb16-30" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb16-31"><a href="#cb16-31" tabindex="-1"></a><span class="co">#&gt; Functional Sensitivity:</span></span>
+<span id="cb16-32"><a href="#cb16-32" tabindex="-1"></a><span class="co">#&gt;   CV = 10%: concentration = 2.608</span></span>
+<span id="cb16-33"><a href="#cb16-33" tabindex="-1"></a><span class="co">#&gt;   CV = 20%: concentration = 1.252</span></span></code></pre></div>
+</div>
+<div id="clinical-application-example" class="section level2">
+<h2>Clinical Application Example</h2>
+<p>For high-sensitivity cardiac troponin assays, regulatory and clinical
+guidelines suggest:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Functional sensitivity should be ≤ 50% of the 99th
+percentile URL</strong></li>
+</ol>
+<ul>
+<li>If 99th percentile URL = 20 ng/L</li>
+<li>Then functional sensitivity should be ≤ 10 ng/L</li>
+</ul>
+<ol start="2" style="list-style-type: decimal">
+<li><strong>CV at the 99th percentile should be ≤ 10%</strong></li>
+</ol>
+<p>Let us check our simulated assay against these criteria:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="co"># Assume 99th percentile URL = 20 ng/L</span></span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>url_99th <span class="ot">&lt;-</span> <span class="dv">20</span></span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a><span class="co"># Check functional sensitivity at 10% CV</span></span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a>fs_10pct <span class="ot">&lt;-</span> profile<span class="sc">$</span>functional_sensitivity<span class="sc">$</span>concentration[</span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a> profile<span class="sc">$</span>functional_sensitivity<span class="sc">$</span>cv_target <span class="sc">==</span> <span class="dv">10</span></span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a>]</span>
+<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a></span>
+<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;99th percentile URL: %.0f ng/L</span><span class="sc">\n</span><span class="st">&quot;</span>, url_99th))</span>
+<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a><span class="co">#&gt; 99th percentile URL: 20 ng/L</span></span>
+<span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;Functional sensitivity (10%% CV): %.1f ng/L</span><span class="sc">\n</span><span class="st">&quot;</span>, fs_10pct))</span>
+<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a><span class="co">#&gt; Functional sensitivity (10% CV): 3.4 ng/L</span></span>
+<span id="cb17-13"><a href="#cb17-13" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;Ratio (FS / URL): %.2f</span><span class="sc">\n</span><span class="st">&quot;</span>, fs_10pct <span class="sc">/</span> url_99th))</span>
+<span id="cb17-14"><a href="#cb17-14" tabindex="-1"></a><span class="co">#&gt; Ratio (FS / URL): 0.17</span></span>
+<span id="cb17-15"><a href="#cb17-15" tabindex="-1"></a></span>
+<span id="cb17-16"><a href="#cb17-16" tabindex="-1"></a><span class="cf">if</span> (fs_10pct <span class="sc">&lt;=</span> <span class="fl">0.5</span> <span class="sc">*</span> url_99th) {</span>
+<span id="cb17-17"><a href="#cb17-17" tabindex="-1"></a> <span class="fu">cat</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">✓ Meets criterion: FS ≤ 50% of 99th percentile URL</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb17-18"><a href="#cb17-18" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb17-19"><a href="#cb17-19" tabindex="-1"></a> <span class="fu">cat</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">✗ Does not meet criterion: FS &gt; 50% of 99th percentile URL</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb17-20"><a href="#cb17-20" tabindex="-1"></a>}</span>
+<span id="cb17-21"><a href="#cb17-21" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb17-22"><a href="#cb17-22" tabindex="-1"></a><span class="co">#&gt; ✓ Meets criterion: FS ≤ 50% of 99th percentile URL</span></span></code></pre></div>
+</div>
+<div id="recommendations-for-precision-profile-studies" class="section level2">
+<h2>Recommendations for Precision Profile Studies</h2>
+<p>Based on established methodology:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Minimum concentration levels</strong>: At least 4-5 levels
+spanning the measurement range</li>
+<li><strong>Concentration span</strong>: Should cover at least 2 orders
+of magnitude when possible</li>
+<li><strong>Precision study design</strong>: Minimum 5 days with
+multiple runs per day</li>
+<li><strong>Include levels near clinical decision points</strong>: 99th
+percentile, diagnostic thresholds</li>
+</ol>
+</div>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p>The precision profile workflow in <code>valytics</code>:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Collect data</strong> at multiple concentration levels using
+a nested precision design</li>
+<li><strong>Run <code>precision_study()</code></strong> with
+<code>sample</code> argument to analyze each level</li>
+<li><strong>Generate <code>precision_profile()</code></strong> to model
+CV-concentration relationship</li>
+<li><strong>Interpret functional sensitivity</strong> relative to
+clinical requirements</li>
+<li><strong>Visualize</strong> with <code>plot()</code> to communicate
+findings</li>
+</ol>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="co"># Complete workflow</span></span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a><span class="fu">data</span>(<span class="st">&quot;troponin_precision&quot;</span>)</span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a><span class="co"># Step 1: Precision study</span></span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a>prec <span class="ot">&lt;-</span> <span class="fu">precision_study</span>(</span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a> <span class="at">data =</span> troponin_precision,</span>
+<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a> <span class="at">value =</span> <span class="st">&quot;value&quot;</span>,</span>
+<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a> <span class="at">sample =</span> <span class="st">&quot;level&quot;</span>,</span>
+<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a> <span class="at">day =</span> <span class="st">&quot;day&quot;</span>,</span>
+<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a> <span class="at">run =</span> <span class="st">&quot;run&quot;</span></span>
+<span id="cb18-11"><a href="#cb18-11" tabindex="-1"></a>)</span>
+<span id="cb18-12"><a href="#cb18-12" tabindex="-1"></a></span>
+<span id="cb18-13"><a href="#cb18-13" tabindex="-1"></a><span class="co"># Step 2: Precision profile</span></span>
+<span id="cb18-14"><a href="#cb18-14" tabindex="-1"></a>profile <span class="ot">&lt;-</span> <span class="fu">precision_profile</span>(</span>
+<span id="cb18-15"><a href="#cb18-15" tabindex="-1"></a> prec,</span>
+<span id="cb18-16"><a href="#cb18-16" tabindex="-1"></a> <span class="at">model =</span> <span class="st">&quot;hyperbolic&quot;</span>,</span>
+<span id="cb18-17"><a href="#cb18-17" tabindex="-1"></a> <span class="at">cv_targets =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">20</span>)</span>
+<span id="cb18-18"><a href="#cb18-18" tabindex="-1"></a>)</span>
+<span id="cb18-19"><a href="#cb18-19" tabindex="-1"></a></span>
+<span id="cb18-20"><a href="#cb18-20" tabindex="-1"></a><span class="co"># Step 3: Interpret and visualize</span></span>
+<span id="cb18-21"><a href="#cb18-21" tabindex="-1"></a><span class="fu">summary</span>(profile)</span>
+<span id="cb18-22"><a href="#cb18-22" tabindex="-1"></a><span class="fu">plot</span>(profile, <span class="at">log_x =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+<p>Armbruster DA, Pry T (2008). Limit of blank, limit of detection and
+limit of quantitation. Clinical Biochemist Reviews, 29(Suppl
+1):S49-S52.</p>
+<p>Apple FS, et al. (2017). Cardiac Troponin Assays: Guide to
+Understanding Analytical Characteristics and Their Impact on Clinical
+Care. Clinical Chemistry, 63(1):73-81.</p>
+<p>Chesher D (2008). Evaluating assay precision. Clinical Biochemist
+Reviews, 29(Suppl 1):S23-S26.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
